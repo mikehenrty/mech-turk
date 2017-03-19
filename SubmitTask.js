@@ -46,11 +46,13 @@ fs.readFile('my_question.xml', 'utf8', function (err,my_question) {
         Question:my_question,
 
         // Add a qualification requirement that the Worker must be either in Canada or the US 
+        /*
         QualificationRequirements:[{
             QualificationTypeId:'00000000000000000071',
             Comparator: "In",
             LocaleValues: [{Country:'US'}]
         }]
+        */
     }
 
     // Publish the object created above
