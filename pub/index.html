@@ -55,10 +55,6 @@ p {
     margin: 0px 0px 30px 0px; /* center body within window */
 }
 
-#error-message {
-    margin: 15px;
-}
-
 table {
     border-collapse:collapse;
     margin:10px auto 0 auto;
@@ -142,8 +138,14 @@ a div span {
   padding: 5px 5px 5px 0px;
 }
 
+#instructions {
+  padding-top: 3px;
+}
+
 #error-message {
-    margin: 15px;
+  margin: 0;
+  padding-top: 20px;
+  color: #bd2e2e;
 }
 
 table {
@@ -267,10 +269,7 @@ body.recording .recording-indicator {
 #wordmark {
     width: auto;
     height: 50px;
-    margin: 10px;
-    position: fixed;
-    top: 0;
-    right: 0;
+    float: right;
 }
 
 .footeritem{
@@ -295,14 +294,35 @@ a{
 a:visited {
     color: black;
 }
+.disabled > div:not(#error-screen) {
+  opacity: 0.6;
+}
 </style>
 </head>
 <body>
  <div id="main_div">
-   <img id="wordmark" src="imgs/wordmark_project-voicebank-gray.png">
     <div id="record-screen" class="screen" hidden>
+     <img id="wordmark" src="imgs/wordmark_project-voicebank-gray.png">
+      <div id="error-screen" class="screen" hidden>
+        <p class="title" id="error-message"></p>
+
+        <p hidden id="error-reload">
+          <button onclick="location.reload()"><b>Reload</b></button>
+          if you'd like to try again
+        </p>
+        <p id="error-supported" hidden>
+          Please try one of these supported browsers:
+          <table>
+            <tr><th>Platform<th>Browser</tr>
+            <tr><td>Desktop<td>Firefox, Chrome</tr>
+            <tr><td>Android<td>Firefox</tr>
+            <tr><td>iPhone, iPad<td>Not supported</tr>
+          </table>
+        </p>
+      </div>
+
       <div id="instructions">
-        <div class="title">Read the following:</div>
+        <div id="title" class="title">Read the following:</div>
       </div>
       <div id="player-box">
         <div id="sentence" class="title"></div>
@@ -336,28 +356,6 @@ a:visited {
       <!-- hidden stuff -->
       <input id="sensitivity" type="range" min="1" max="200"></input>
       <audio id="player" controls></audio><br/>
-    </div>
-    <div id="error-screen" class="screen" hidden>
-      <h1>VoiceBank</h1>
-      <p>
-        This application cannot run because:
-      </p>
-
-      <p id="error-message"><p>
-
-      <p id="error-reload">
-        <button onclick="location.reload()"><b>Reload</b></button>
-        if you'd like to try again
-      </p>
-      <p id="error-supported" hidden>
-        Please try one of these supported browsers:
-        <table>
-          <tr><th>Platform<th>Browser</tr>
-          <tr><td>Desktop<td>Firefox, Chrome</tr>
-          <tr><td>Android<td>Firefox</tr>
-          <tr><td>iPhone, iPad<td>Not supported</tr>
-        </table>
-      </p>
     </div>
  </div>
 </body>

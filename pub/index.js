@@ -21,7 +21,7 @@ var sentences = [], directories = [];
 var currentSentence, currentDirectory;
 
 // These are some things that can go wrong:
-var ERR_PREVIEW = 'You must accept the HIT before recording.'
+var ERR_PREVIEW = 'Please click accept the HIT to record your voice.'
 var ERR_PLATFORM = 'Your browser does not support audio recording.';
 var ERR_NO_CONSENT = 'You did not consent to recording. ' +
     'You must click the "I Agree" button in order to use this website.';
@@ -34,6 +34,7 @@ var ERR_DATA_FAILED = 'Submitting your profile data failed. ' +
 
 // This is the program startup sequence.
 checkPlatformSupport()
+  .then(basicInit)
   .then(validatePage)
   .then(getMicrophone)
   .then(rememberMicrophone)
@@ -77,6 +78,10 @@ function checkPlatformSupport() {
   else {
     return Promise.resolve(true);
   }
+}
+
+function basicInit() {
+  document.querySelector('#record-screen').hidden = false;
 }
 
 function validatePage() {
@@ -139,15 +144,21 @@ function parseSentences(file) {
 // If anything goes wrong in the app startup sequence, this function
 // is called to tell the user what went wrong
 function displayErrorMessage(error) {
+  document.querySelector('#record-screen').classList.add('disabled');
   document.querySelector('#error-screen').hidden = false;
   document.querySelector('#error-message').textContent = error;
+  document.querySelector('#title').textContent = '';
 
   if (error === ERR_PLATFORM) {
     // Fatal error. Just show a table of supported browsers
     document.querySelector('#error-reload').hidden = true;
     document.querySelector('#error-supported').hidden = false;
   }
-  else {
+  else if (error === ERR_PREVIEW) {
+    // Fatal error. Just show a table of supported browsers
+    document.querySelector('#error-reload').hidden = true;
+    document.querySelector('#error-supported').hidden = true;
+  } else {
     // Otherwise, the user can correct the errror. Invite them to reload
     document.querySelector('#error-reload').hidden = false;
     document.querySelector('#error-supported').hidden = true;
