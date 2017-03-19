@@ -21,7 +21,7 @@ var sentences = [], directories = [];
 var currentSentence, currentDirectory;
 
 // These are some things that can go wrong:
-var ERR_PREVIEW = 'Please click accept the HIT to record your voice.'
+var ERR_PREVIEW = 'Please click "Accept HIT" to record your voice.'
 var ERR_PLATFORM = 'Your browser does not support audio recording.';
 var ERR_NO_CONSENT = 'You did not consent to recording. ' +
     'You must click the "I Agree" button in order to use this website.';
@@ -229,7 +229,6 @@ function initializeAndRun() {
         } else {
           // sum one
           totalsess++;
-          document.querySelector('#submitted').innerHTML = "Submitted Recordings this Session: " + totalsess;
           recordingScreen.discards();
         }
       })
