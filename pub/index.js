@@ -122,15 +122,18 @@ function rememberMicrophone(stream) {
 
 // Fetch the sentences.json file that tell us what sentences
 // to ask the user to read
-function getSentences() { return fetch('sentences.json').then(function(r) { return r.json(); }); }
+function getSentences() {
+  return fetch('screenplaysfinal.txt').then(function(r) {
+    return r.text();
+  });
+}
 
 // Once we get the json file, break the keys and values into two
 // parallel arrays.
-function parseSentences(directoryToSentenceMap) {
-  for(var d in directoryToSentenceMap) {
-    directories.push(d);
-    sentences.push(directoryToSentenceMap[d]);
-  }
+function parseSentences(file) {
+  sentences = file.split('\n').filter(function(s) {
+    return !!s;
+  });
 }
 
 // If anything goes wrong in the app startup sequence, this function
