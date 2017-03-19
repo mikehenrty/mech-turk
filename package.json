@@ -1,0 +1,16 @@
+{
+  "name": "mechturk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "2.28.0",
+    "jsonfile": "2.4.0",
+    "node-static": "0.7.9"
+  }
+}

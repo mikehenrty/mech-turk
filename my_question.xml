@@ -1,0 +1,4 @@
+<ExternalQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2006-07-14/ExternalQuestion.xsd">
+  <ExternalURL>https://localhost:9000/</ExternalURL>
+  <FrameHeight>400</FrameHeight>
+</ExternalQuestion>
