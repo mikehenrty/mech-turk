@@ -175,8 +175,9 @@ function initializeAndRun() {
   // If the user clicks 'Upload' on the playback screen, do the upload
   // and switch back to the recording screen for a new sentence
   recordingScreenElement.addEventListener('upload', function(event) {
+    document.getElementById('assignmentId').form.submit();
     // upload(currentDirectory, event.detail);
-    switchToRecordingScreen(true);
+    // switchToRecordingScreen(true);
   });
 
   // If the user clicks 'Discard', switch back to the recording screen
