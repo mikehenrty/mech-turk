@@ -34,7 +34,6 @@ var ERR_DATA_FAILED = 'Submitting your profile data failed. ' +
 
 // This is the program startup sequence.
 checkPlatformSupport()
-  .then(basicInit)
   .then(validatePage)
   .then(getMicrophone)
   .then(rememberMicrophone)
@@ -78,10 +77,6 @@ function checkPlatformSupport() {
   else {
     return Promise.resolve(true);
   }
-}
-
-function basicInit() {
-  document.querySelector('#record-screen').hidden = false;
 }
 
 function validatePage() {
@@ -170,6 +165,7 @@ function displayErrorMessage(error) {
 // screens, and sets up event handlers to switch back and forth between
 // those screens until the user gets tired of making recordings.
 function initializeAndRun() {
+  document.querySelector('#record-screen').classList.remove('disabled');
   var totalsess = 0;
   // Get the DOM elements for the recording and playback screens
   var recordingScreenElement = document.querySelector('#record-screen');
@@ -180,6 +176,7 @@ function initializeAndRun() {
 
   // When a recording is complete, pass it to the playback screen
   recordingScreenElement.addEventListener('record', function(event) {
+    document.querySelector('#record').textContent = 'Stop';
     recordingScreen.play(event.detail);
   });
 
@@ -208,6 +205,8 @@ function initializeAndRun() {
 
     // Hide the playback screen (and release its audio) if it was displayed
     // Show the recording screen
+    document.querySelector('#title').textContent =
+      'Press record and Read out loud:';
     recordingScreen.show(currentSentence);
   }
 
@@ -356,6 +355,7 @@ function RecordingScreen(element, microphone) {
       // Without this argument to start(), Chrome will call dataavailable
       // very frequently.
       recorder.start(20000);
+      document.querySelector('#lblrecord').textContent = 'Stop';
       document.querySelector('#divanim').className = 'recording-indicator';
       document.body.className = 'recording';
     }
@@ -385,7 +385,7 @@ function RecordingScreen(element, microphone) {
         });
       };
       recorder.stop();
-
+      document.querySelector('#lblrecord').textContent = 'Re-record';
       document.querySelector('#lblplay').style.color = "rgb(0,174,239)";
       document.querySelector('#lblsubmit').style.color = "rgb(0,174,239)";
       document.querySelector('#divanim').className = 'stopped-indicator';
