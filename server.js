@@ -3,7 +3,7 @@ var jsonfile = require('jsonfile');
 
 const CONFIG_FILE = './config.json';
 
-var fileServer = new static.Server('./pub');
+var fileServer = new static.Server('./pub', { cache: false });
 
 jsonfile.readFile(CONFIG_FILE, function(err, config) {
   require('http').createServer(function (request, response) {
