@@ -35,10 +35,9 @@ var ERR_DATA_FAILED = 'Submitting your profile data failed. ' +
 // This is the program startup sequence.
 checkPlatformSupport()
   .then(validatePage)
-  .then(getMicrophone)
-  .then(rememberMicrophone)
-  .then(getSentences)
-  .then(parseSentences)
+  .then(function() {
+    return Promise.all([getMicrophone(), getSentences()]);
+  })
   .then(initializeAndRun)
   .catch(displayErrorMessage);
 
@@ -93,7 +92,11 @@ function validatePage() {
 // This can fail because the browser does not support it, or
 // because the user does not give permission.
 function getMicrophone() {
-  return new Promise(function(resolve,reject) {
+  return new Promise(function(res,reject) {
+    function resolve(stream) {
+      microphone = stream;
+      res(stream);
+    }
     // Reject the promise with a 'permission denied' error code
     function deny() { reject(ERR_NO_MIC); }
 
@@ -115,24 +118,15 @@ function getMicrophone() {
   });
 }
 
-// When we get the microphone audio stream, remember it in a global variable.
-function rememberMicrophone(stream) {
-  microphone = stream;
-}
-
 // Fetch the sentences.json file that tell us what sentences
 // to ask the user to read
 function getSentences() {
   return fetch('screenplaysfinal.txt').then(function(r) {
-    return r.text();
-  });
-}
-
-// Once we get the json file, break the keys and values into two
-// parallel arrays.
-function parseSentences(file) {
-  sentences = file.split('\n').filter(function(s) {
-    return !!s;
+    return r.text().then(function(text) {
+      sentences = text.split('\n').filter(function(s) {
+        return !!s;
+      });
+    });
   });
 }
 
@@ -386,8 +380,8 @@ function RecordingScreen(element, microphone) {
       };
       recorder.stop();
       document.querySelector('#lblrecord').textContent = 'Re-record';
-      document.querySelector('#lblplay').style.color = "rgb(0,174,239)";
-      document.querySelector('#lblsubmit').style.color = "rgb(0,174,239)";
+      document.querySelector('#playButton').classList.add('active');
+      document.querySelector('#uploadButton').classList.add('active');
       document.querySelector('#divanim').className = 'stopped-indicator';
       element.querySelector('#playimg').src = "imgs/Triangle-09-on.png";
       element.querySelector('#submitimg').src = "imgs/CheckMark-on.png";
@@ -530,7 +524,7 @@ function RecordingScreen(element, microphone) {
     if (timeStopped !== null) {
       stoppedDuration += (new Date() - timeStopped);
     }
-    started = setInterval(clockRunning, 10);
+    started = setInterval(clockRunning, 100);
   }
 
   function clockstop() {
@@ -543,7 +537,7 @@ function RecordingScreen(element, microphone) {
     stoppedDuration = 0;
     timeBegan = null;
     timeStopped = null;
-    document.getElementById("elapsedtime").innerHTML = "00:00.000";
+    document.getElementById("elapsedtime").innerHTML = "00.0s";
   }
 
   function clockRunning(){
@@ -552,12 +546,10 @@ function RecordingScreen(element, microphone) {
         , hour = timeElapsed.getUTCHours()
         , min = timeElapsed.getUTCMinutes()
         , sec = timeElapsed.getUTCSeconds()
-        , ms = timeElapsed.getUTCMilliseconds();
+        , ms = Math.round(timeElapsed.getUTCMilliseconds() / 100);
 
     document.getElementById("elapsedtime").innerHTML =
-        (min > 9 ? min : "0" + min) + ":" +
-        (sec > 9 ? sec : "0" + sec) + "." +
-        (ms > 99 ? ms : ms > 9 ? "0" + ms : "00" + ms);
+        (sec > 9 ? sec : "0" + sec) + "." + ms + 's'
   };
 
 }
