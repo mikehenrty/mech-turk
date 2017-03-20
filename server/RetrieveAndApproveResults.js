@@ -1,4 +1,3 @@
-var util = require('util');
 var AWS = require('aws-sdk');
 AWS.config.loadFromPath('./config.json');
 // Add in the HITId below. See SubmitTask.js for generating a HIT
@@ -36,6 +35,11 @@ mturk.listHITs({}, function(err, hits) {
     function(err, assignmentsForHIT){
       if(err) {
         console.error(err.message);
+        return;
+      }
+
+      if (assignmentsForHIT.NumResults === 0) {
+        console.log(assignmentsForHIT);
         return;
       }
 
