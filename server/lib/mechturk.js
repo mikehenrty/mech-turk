@@ -60,6 +60,19 @@ MechTurk.prototype._listReviewableHITs = function() {
   return promisify(this._mt, this._mt.listReviewableHITs, {});
 };
 
+MechTurk.prototype._deleteHIT = function(id) {
+  return promisify(this._mt, this._mt.deleteHIT, {
+    HITId: id,
+  });
+};
+
+MechTurk.prototype._expireHIT = function(id) {
+  return promisify(this._mt, this._mt.updateExpirationForHIT, {
+    HITId: id,
+    ExpireAt: 0
+  });
+};
+
 MechTurk.prototype._approveAssignment = function(id) {
   return promisify(this._mt, this._mt.approveAssignment, {
     AssignmentId: id,
@@ -94,8 +107,7 @@ MechTurk.prototype.list = function() {
     }
 
     hits.HITs.forEach(hit => {
-      console.log(`\n\nhit ${hit.HITId.substr(0,4)} ${hit.HITStatus}`);
-      console.log(hit);
+      console.log(`hit ${hit.HITId.substr(0,4)} ${hit.HITStatus}`);
     });
   });
 };
@@ -117,13 +129,25 @@ MechTurk.prototype.approve = function() {
     .then(approved => {
       console.log(`approved ${approved} assignments`);
     });
+};
 
-
-    /* Might need these string consts later for auto complete.
-      var pending = hit.NumberOfAssignmentsPending;
-      var available = hit.NumberOfAssignmentsAvailable;
-      var completed = hit.NumberOfAssignmentsCompleted;
-    */
+MechTurk.prototype.trim = function() {
+  return this._listHITs()
+    .then(results => {
+      return Promise.all(results.HITs.map(hit => {
+        var pending = hit.NumberOfAssignmentsPending;
+        var available = hit.NumberOfAssignmentsAvailable;
+        var completed = hit.NumberOfAssignmentsCompleted;
+        if (pending + available + completed === 0) {
+          console.log('got a useless one', hit.HITId.substr(0,4));
+          return this._deleteHIT(hit.HITId);
+        }
+        return true;
+      }));
+    })
+    .then(results => {
+      console.log('here are the results', results);
+    });
 };
 
 MechTurk.prototype.add = function() {
