@@ -165,14 +165,13 @@ MechTurk.prototype.trim = function(NextToken) {
         var pending = hit.NumberOfAssignmentsPending;
         var available = hit.NumberOfAssignmentsAvailable;
         var completed = hit.NumberOfAssignmentsCompleted;
+
         if (pending + available + completed === 0) {
           console.log('got a useless one', hit.HITId.substr(0,4));
           return this._deleteHIT(hit.HITId);
         }
-        console.log(available, pending, completed);
         return true;
-      }))
-      .then(r => {
+      })).then(r => {
         if (results.NextToken) {
           return this.trim(results.NextToken);
         }
