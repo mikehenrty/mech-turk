@@ -52,8 +52,12 @@ MechTurk.prototype._listAssignmentsForHIT = function(options) {
   return promisify(this._mt, this._mt.listAssignmentsForHIT, options);
 };
 
-MechTurk.prototype._listHITs = function() {
-  return promisify(this._mt, this._mt.listHITs, {});
+MechTurk.prototype._listHITs = function(NextToken) {
+  var options = {};
+  if (NextToken) {
+    options.NextToken = NextToken;
+  }
+  return promisify(this._mt, this._mt.listHITs, options);
 };
 
 MechTurk.prototype._listReviewableHITs = function(NextToken) {
@@ -97,10 +101,12 @@ MechTurk.prototype._getAssigments = function(NextToken) {
       results = r;
       return promiseMap(this, this._listAssignmentsForHIT, results.HITs);
     })
+
     .then(r => {
       r.forEach(hit => {
         assignments = assignments.concat(hit.Assignments);
       });
+
       return {
         assignments: assignments,
         NextToken: results.NextToken
@@ -149,9 +155,12 @@ MechTurk.prototype.approve = function() {
     });
 };
 
-MechTurk.prototype.trim = function() {
-  return this._listHITs()
-    .then(results => {
+MechTurk.prototype.trim = function(NextToken) {
+  var results;
+
+  return this._listHITs(NextToken)
+    .then(r => {
+      results = r;
       return Promise.all(results.HITs.map(hit => {
         var pending = hit.NumberOfAssignmentsPending;
         var available = hit.NumberOfAssignmentsAvailable;
@@ -160,11 +169,19 @@ MechTurk.prototype.trim = function() {
           console.log('got a useless one', hit.HITId.substr(0,4));
           return this._deleteHIT(hit.HITId);
         }
+        console.log(available, pending, completed);
         return true;
-      }));
+      }))
+      .then(r => {
+        if (results.NextToken) {
+          return this.trim(results.NextToken);
+        }
+      });
     })
     .then(results => {
-      console.log('here are the results', results);
+      if (!NextToken) {
+        console.log('here are the results', results);
+      }
     });
 };
 
