@@ -45,6 +45,10 @@ gulp.task('turk', () => {
       return mechturk.add();
       break;
 
+    case '--approve':
+      return mechturk.approve();
+      break;
+
     case '--list':
     default:
       return mechturk.list();

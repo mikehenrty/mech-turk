@@ -7,6 +7,7 @@ const ENDPOINT = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com';
 
 const Q_TITLE = 'harpua';
 const Q_DESC = 'test description';
+const DEFAULT_FEEDBACK = "Thanks for the great work!";
 
 function promisify(context, method, args) {
   if (!Array.isArray(args)) {
@@ -16,7 +17,7 @@ function promisify(context, method, args) {
   return new Promise((resolve, reject) => {
     method.apply(context, args.concat([(err, result) => {
       if (err) {
-        console.error('error', method.name, err);
+        console.error('promise error', err);
         reject(err);
         return;
       }
@@ -25,25 +26,63 @@ function promisify(context, method, args) {
   });
 }
 
+function promiseMap(context, method, items) {
+  return Promise.all(items.map(item => {
+    return method.call(context, item);
+  }));
+}
+
+
 function MechTurk() {
   AWS.config.loadFromPath(CONFIG_FILE);
   this._mt = new AWS.MTurk({ endpoint: ENDPOINT });
 }
 
+MechTurk.prototype._deleteHIT = function(HITId) {
+  return promisify(this._mt, this._mt.deleteHIT, { HITId });
+};
+
 MechTurk.prototype._createHIT = function(options) {
   return promisify(this._mt, this._mt.createHIT, options);
 };
 
-MechTurk.prototype._listAssignmentsForHIT = function(HITId) {
-  return promisify(this._mt, this._mt.listAssignmentsForHIT, { HITId });
+MechTurk.prototype._listAssignmentsForHIT = function(options) {
+  options.MaxResults = options.MaxResults || 100;
+  options.AssignmentStatuses = ['Submitted'];
+  return promisify(this._mt, this._mt.listAssignmentsForHIT, options);
 };
 
 MechTurk.prototype._listHITs = function() {
   return promisify(this._mt, this._mt.listHITs, {});
 };
 
+MechTurk.prototype._listReviewableHITs = function() {
+  return promisify(this._mt, this._mt.listReviewableHITs, {});
+};
+
+MechTurk.prototype._approveAssignment = function(id) {
+  return promisify(this._mt, this._mt.approveAssignment, {
+    AssignmentId: id,
+    RequesterFeedback: DEFAULT_FEEDBACK
+  });
+};
+
 MechTurk.prototype._getQuestion = function() {
   return promisify(fs, fs.readFile, [QUESTION_FILE, 'utf8']);
+};
+
+MechTurk.prototype._getAssigments = function() {
+  return this._listReviewableHITs()
+    .then(results => {
+      return promiseMap(this, this._listAssignmentsForHIT, results.HITs);
+    })
+    .then(results => {
+      var assignments = [];
+      results.forEach(hit => {
+        assignments = assignments.concat(hit.Assignments);
+      });
+      return assignments;
+    });
 };
 
 MechTurk.prototype.list = function() {
@@ -55,12 +94,36 @@ MechTurk.prototype.list = function() {
     }
 
     hits.HITs.forEach(hit => {
-      console.log(`hit ${hit.HITId.substr(0,4)} ${hit.HITStatus}`);
-      this._listAssignmentsForHIT(hit.HITId).then(assignments => {
-        console.log('got some assignments for it');
-      });
+      console.log(`\n\nhit ${hit.HITId.substr(0,4)} ${hit.HITStatus}`);
+      console.log(hit);
     });
   });
+};
+
+MechTurk.prototype.approve = function() {
+  return this._getAssigments()
+    .then(assignments => {
+      if (assignments.length === 0) {
+        return 0;
+      }
+
+      return promiseMap(this, this._approveAssignment, assignments.map(a => {
+        return a.AssignmentId;
+      }))
+      .then(() => {
+        return assignments.length;
+      });
+    })
+    .then(approved => {
+      console.log(`approved ${approved} assignments`);
+    });
+
+
+    /* Might need these string consts later for auto complete.
+      var pending = hit.NumberOfAssignmentsPending;
+      var available = hit.NumberOfAssignmentsAvailable;
+      var completed = hit.NumberOfAssignmentsCompleted;
+    */
 };
 
 MechTurk.prototype.add = function() {
