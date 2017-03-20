@@ -5,12 +5,13 @@
   "main": "server/server.js",
   "dependencies": {
     "aws-sdk": "2.28.0",
-    "jsonfile": "2.4.0",
-    "jshint": "2.9.4",
-    "node-static": "0.7.9",
     "gulp": "3.9.1",
     "gulp-nodemon": "2.2.1",
     "gulp-jshint": "2.0.4",
-    "gulp-shell": "0.6.3"
+    "gulp-shell": "0.6.3",
+    "jsonfile": "2.4.0",
+    "jshint": "2.9.4",
+    "node-static": "0.7.9",
+    "promise": "7.1.1"
   }
 }

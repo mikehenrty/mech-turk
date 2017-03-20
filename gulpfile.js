@@ -37,4 +37,9 @@ gulp.task('watch', () => {
   gulp.watch('package.json', ['npm-install']);
 });
 
+gulp.task('list', () => {
+  var mechturk = require('./server/lib/mechturk.js');
+  mechturk.list();
+});
+
 gulp.task('default', ['lint', 'watch', 'listen']);
