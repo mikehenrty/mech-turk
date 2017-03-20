@@ -56,8 +56,12 @@ MechTurk.prototype._listHITs = function() {
   return promisify(this._mt, this._mt.listHITs, {});
 };
 
-MechTurk.prototype._listReviewableHITs = function() {
-  return promisify(this._mt, this._mt.listReviewableHITs, {});
+MechTurk.prototype._listReviewableHITs = function(NextToken) {
+  var options = {};
+  if (NextToken) {
+    options.NextToken = NextToken;
+  }
+  return promisify(this._mt, this._mt.listReviewableHITs, options);
 };
 
 MechTurk.prototype._deleteHIT = function(id) {
@@ -84,16 +88,27 @@ MechTurk.prototype._getQuestion = function() {
   return promisify(fs, fs.readFile, [QUESTION_FILE, 'utf8']);
 };
 
-MechTurk.prototype._getAssigments = function() {
-  return this._listReviewableHITs()
-    .then(results => {
+MechTurk.prototype._getAssigments = function(NextToken) {
+  var assignments = [];
+  var results = null;
+
+  return this._listReviewableHITs(NextToken)
+    .then(r => {
+      results = r;
+      console.log(results);
       return promiseMap(this, this._listAssignmentsForHIT, results.HITs);
     })
-    .then(results => {
-      var assignments = [];
-      results.forEach(hit => {
+    .then(r => {
+      r.forEach(hit => {
         assignments = assignments.concat(hit.Assignments);
       });
+      if (results.NextToken) {
+        return this._getAssigments(results.NextToken)
+          .then(r => {
+            console.log('deeper', r);
+            return assignments.concat(r);
+          });
+      }
       return assignments;
     });
 };
