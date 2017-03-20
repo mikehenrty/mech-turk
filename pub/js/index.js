@@ -5,7 +5,7 @@ var LOUD_THRESHOLD = -40;    // Above this dB level we display in red
 var SILENCE_THRESHOLD = -65; // Levels below this db threshold count as silence
 var SILENCE_DURATION = 1.5;  // How many seconds of quiet before stop recording
 var STOP_BEEP_HZ = 440;      // Frequency and duration of beep
-var STOP_BEEP_S = .3;
+var STOP_BEEP_S = 0.3;
 var rightside = true;
 
 // The microphone stream we get from getUserMedia
@@ -21,7 +21,7 @@ var sentences = [], directories = [];
 var currentSentence, currentDirectory;
 
 // These are some things that can go wrong:
-var ERR_PREVIEW = 'Please click "Accept HIT" to record your voice.'
+var ERR_PREVIEW = 'Please click "Accept HIT" to record your voice.';
 var ERR_PLATFORM = 'Your browser does not support audio recording.';
 var ERR_NO_CONSENT = 'You did not consent to recording. ' +
     'You must click the "I Agree" button in order to use this website.';
@@ -53,7 +53,7 @@ function getQuery() {
 
 function checkPlatformSupport() {
   function isWebAudioSupported() {
-    return typeof window.AudioContext === 'function'
+    return typeof window.AudioContext === 'function';
   }
 
   function isGetUserMediaSupported() {
@@ -213,7 +213,8 @@ function initializeAndRun() {
     var headers = new Headers();
     headers.append("uid", localStorage.getUserInfoGiven);
 
-    fetch('/upload/' + directory, { method: 'POST', headers, body: recording })
+    fetch('/upload/' + directory,
+      { method: 'POST', headers: headers, body: recording })
       .then(function(response) {
         if (response.status !== 200) {
           displayErrorMessage(ERR_UPLOAD_FAILED + ' ' + response.status + ' ' +
@@ -321,13 +322,13 @@ function RecordingScreen(element, microphone) {
     else {
       microphoneGain = 2;
     }
-    localStorage.microphoneGain = microphoneGain
+    localStorage.microphoneGain = microphoneGain;
   }
 
   var sensitivity = element.querySelector('#sensitivity');
   sensitivity.onchange = function() {
     microphoneGain = parseFloat(this.value)/10;
-    volumeNode.gain.value = microphoneGain
+    volumeNode.gain.value = microphoneGain;
     localStorage.microphoneGain = microphoneGain;
   };
   sensitivity.value = microphoneGain * 10;
@@ -444,12 +445,12 @@ function RecordingScreen(element, microphone) {
       var fillStyle = 'black';
       if (recording) {
         var r = 100 + (ratio) * 255 * 2.5;
-        var g = 24
+        var g = 24;
         var b = 24;
         fillStyle = `rgb(${r}, ${g}, ${b})`;
       }
 
-      context.fillStyle = fillStyle
+      context.fillStyle = fillStyle;
       context.fillRect(x_bar, total,
                        barwidth, height);
       context.fillStyle = 'white';
@@ -488,7 +489,7 @@ function RecordingScreen(element, microphone) {
       setTimeout(visualize, 70)
     }
     */
-    setTimeout(visualize, 50)
+    setTimeout(visualize, 50);
   }
 
   // The button responds to clicks to start and stop recording
@@ -517,10 +518,10 @@ function RecordingScreen(element, microphone) {
   }.bind(this));
 
 // CLOCK!
-  var timeBegan = null
-      , timeStopped = null
-      , stoppedDuration = 0
-      , started = null;
+  var timeBegan = null;
+  var timeStopped = null;
+  var stoppedDuration = 0;
+  var started = null;
 
   function clockstart() {
     clockreset();
@@ -548,16 +549,16 @@ function RecordingScreen(element, microphone) {
   }
 
   function clockRunning(){
-    var currentTime = new Date()
-        , timeElapsed = new Date(currentTime - timeBegan - stoppedDuration)
-        , hour = timeElapsed.getUTCHours()
-        , min = timeElapsed.getUTCMinutes()
-        , sec = timeElapsed.getUTCSeconds()
-        , ms = Math.round(timeElapsed.getUTCMilliseconds() / 100);
+    var currentTime = new Date();
+    var timeElapsed = new Date(currentTime - timeBegan - stoppedDuration);
+    var hour = timeElapsed.getUTCHours();
+    var min = timeElapsed.getUTCMinutes();
+    var sec = timeElapsed.getUTCSeconds();
+    var ms = Math.round(timeElapsed.getUTCMilliseconds() / 100);
 
     document.getElementById("elapsedtime").innerHTML =
-        (sec > 9 ? sec : "0" + sec) + "." + ms + 's'
-  };
+        (sec > 9 ? sec : "0" + sec) + "." + ms + 's';
+  }
 
   visualize();
 }

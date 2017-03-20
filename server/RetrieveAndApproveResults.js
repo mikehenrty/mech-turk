@@ -2,7 +2,6 @@ var util = require('util');
 var AWS = require('aws-sdk');
 AWS.config.loadFromPath('./config.json');
 // Add in the HITId below. See SubmitTask.js for generating a HIT
-var my_HITId = "YOUR_HIT_ID";
 
 var endpoint = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com';
 // Uncomment this line to use in production
@@ -22,8 +21,13 @@ mturk.listHITs({}, function(err, hits) {
     return;
   }
 
-  hits.HITs && hits.HITs.forEach(function (hit) {
-    if (!hit.HITStatus === 'Reviewable') {
+  if (!hits.HITs || hits.HITs.length === 0) {
+    console.log('no hits', hits);
+    return;
+  }
+
+  hits.HITs.forEach(function (hit) {
+    if (hit.HITStatus !== 'Reviewable') {
       consol.log('leaving', hit.HITId);
       return;
     }
@@ -47,7 +51,7 @@ mturk.listHITs({}, function(err, hits) {
           AssignmentId: assignmentsForHIT.Assignments[i].AssignmentId,
           RequesterFeedback: "Thanks for the great work!"
         });
-      }                
+      }
     });
-  })
+  });
 });

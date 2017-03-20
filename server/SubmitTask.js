@@ -33,7 +33,7 @@ Publish a new HIT to the Sandbox marketplace start by reading in the HTML markup
 fs.readFile('my_question.xml', 'utf8', function (err,my_question) {
     if (err) {
         return console.log(err);
-    };
+    }
 
     // Construct the HIT object below
     var myhit = {
@@ -53,7 +53,7 @@ fs.readFile('my_question.xml', 'utf8', function (err,my_question) {
             LocaleValues: [{Country:'US'}]
         }]
         */
-    }
+    };
 
     // Publish the object created above
     mturk.createHIT(myhit,function(err, data)
@@ -68,5 +68,5 @@ fs.readFile('my_question.xml', 'utf8', function (err,my_question) {
               "https://workersandbox.mturk.com/mturk/preview?groupId=" + 
                data.HIT.HITTypeId);
         }
-    })
+    });
 });
