@@ -37,9 +37,15 @@ gulp.task('watch', () => {
   gulp.watch('package.json', ['npm-install']);
 });
 
-gulp.task('list', () => {
+gulp.task('turk', () => {
   var mechturk = require('./server/lib/mechturk.js');
-  mechturk.list();
+  // command comes in --arg form.
+  switch (process.argv[3]) {
+    case '--list':
+    default:
+      return mechturk.list();
+      break;
+  }
 });
 
 gulp.task('default', ['lint', 'watch', 'listen']);
