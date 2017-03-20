@@ -1,37 +1,49 @@
-
 const AWS = require('aws-sdk');
+const fs = require('fs');
+
 const CONFIG_FILE = __dirname + '/../../config.json';
+const QUESTION_FILE = __dirname + '/my_question.xml';
 const ENDPOINT = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com';
+
+const Q_TITLE = 'harpua';
+const Q_DESC = 'test description';
+
+function promisify(context, method, args) {
+  if (!Array.isArray(args)) {
+    args = [args];
+  }
+
+  return new Promise((resolve, reject) => {
+    method.apply(context, args.concat([(err, result) => {
+      if (err) {
+        console.error('error', method.name, err);
+        reject(err);
+        return;
+      }
+      resolve(result);
+    }]));
+  });
+}
 
 function MechTurk() {
   AWS.config.loadFromPath(CONFIG_FILE);
   this._mt = new AWS.MTurk({ endpoint: ENDPOINT });
 }
 
+MechTurk.prototype._createHIT = function(options) {
+  return promisify(this._mt, this._mt.createHIT, options);
+};
+
 MechTurk.prototype._listAssignmentsForHIT = function(HITId) {
-  return new Promise((resolve, reject) => {
-    this._mt.listAssignmentsForHIT({HITId: HITId}, (err, assignments) => {
-      if (err) {
-        console.error('could not retrive assignments', HITId, err);
-        reject(err);
-        return;
-      }
-      resolve(assignments);
-    });
-  });
+  return promisify(this._mt, this._mt.listAssignmentsForHIT, { HITId });
 };
 
 MechTurk.prototype._listHITs = function() {
-  return new Promise((resolve, reject) => {
-    this._mt.listHITs({}, function(err, hits) {
-      if (err) {
-        console.error('could not get hits', err);
-        reject(err);
-        return;
-      }
-      resolve(hits);
-    });
-  });
+  return promisify(this._mt, this._mt.listHITs, {});
+};
+
+MechTurk.prototype._getQuestion = function() {
+  return promisify(fs, fs.readFile, [QUESTION_FILE, 'utf8']);
 };
 
 MechTurk.prototype.list = function() {
@@ -49,6 +61,30 @@ MechTurk.prototype.list = function() {
       });
     });
   });
+};
+
+MechTurk.prototype.add = function() {
+  return this._getQuestion()
+    .then(question => {
+      return this._createHIT({
+        Title: Q_TITLE,
+        Description: Q_DESC,
+        MaxAssignments: 1,
+        LifetimeInSeconds: 3600,
+        AssignmentDurationInSeconds: 600,
+        Reward:'0.05',
+        Question: question,
+        QualificationRequirements:[{
+          QualificationTypeId:'00000000000000000071',
+          Comparator: "In",
+          LocaleValues: [{Country:'US'}, {Country: 'DE'}]
+        }]
+      });
+    })
+    .then(hit => {
+      hit = hit.HIT;
+      console.log('new hit created', hit.Title, hit.HITId.substr(0, 4));
+    });
 };
 
 module.exports = new MechTurk();

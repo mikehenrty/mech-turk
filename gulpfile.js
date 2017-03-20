@@ -41,6 +41,10 @@ gulp.task('turk', () => {
   var mechturk = require('./server/lib/mechturk.js');
   // command comes in --arg form.
   switch (process.argv[3]) {
+    case '--add':
+      return mechturk.add();
+      break;
+
     case '--list':
     default:
       return mechturk.list();
