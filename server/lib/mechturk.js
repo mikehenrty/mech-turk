@@ -114,17 +114,23 @@ MechTurk.prototype._getAssigments = function(NextToken) {
     });
 };
 
-MechTurk.prototype.list = function() {
-  return this._listHITs().then(hits => {
+MechTurk.prototype.list = function(NextToken) {
+  var results;
+
+  return this._listHITs(NextToken).then(hits => {
+    var results = hits;
 
     if (!hits.NumResults) {
-      console.log('no hits for current user');
       return;
     }
 
     hits.HITs.forEach(hit => {
       console.log(`hit ${hit.HITId.substr(0,4)} ${hit.HITStatus}`);
     });
+
+    if (results.NextToken) {
+      return this.list(results.NextToken);
+    }
   });
 };
 
