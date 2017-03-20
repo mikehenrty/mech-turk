@@ -121,7 +121,7 @@ function getMicrophone() {
 // Fetch the sentences.json file that tell us what sentences
 // to ask the user to read
 function getSentences() {
-  return fetch('screenplaysfinal.txt').then(function(r) {
+  return fetch('./data/screenplaysfinal.txt').then(function(r) {
     return r.text().then(function(text) {
       sentences = text.split('\n').filter(function(s) {
         return !!s;
