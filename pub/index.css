@@ -4,7 +4,7 @@ body {
 }
 
 #main_div {
-    margin: 20px 20px 0; /* center body within window */
+  margin: 10px 0;
 }
 
 .title{
@@ -33,8 +33,9 @@ p {
 }
 
 #player-box{
-    border: solid 1px;
-    border-color: rgb(200,201,204);
+  border: solid 1px;
+  border-color: rgb(200,201,204);
+  padding-bottom: 10px;
 }
 
 #player {
