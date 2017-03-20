@@ -30,7 +30,7 @@ var mturk = new AWS.MTurk({ endpoint: endpoint });
 Publish a new HIT to the Sandbox marketplace start by reading in the HTML markup specifying your task from a seperate file (my_question.xml). To learn more about the HTML question type, see here: http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMturkAPI/ApiReference_HTMLQuestionArticle.html
 */
 
-fs.readFile('my_question.xml', 'utf8', function (err,my_question) {
+fs.readFile(__dirname + '/my_question.xml', 'utf8', function (err,my_question) {
     if (err) {
         return console.log(err);
     }
