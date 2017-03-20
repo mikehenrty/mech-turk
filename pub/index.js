@@ -348,6 +348,7 @@ function RecordingScreen(element, microphone) {
       recorder.start(20000);
       document.querySelector('#lblrecord').textContent = 'Stop';
       document.querySelector('#divanim').className = 'recording-indicator';
+      document.querySelector('#uploadButton').classList.remove('active');
       document.body.className = 'recording';
     }
   }

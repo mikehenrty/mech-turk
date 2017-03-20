@@ -96,6 +96,16 @@ p {
   font-weight: bold;
 }
 
+#uploadButton.active {
+  animation-name: pulse;
+  animation-duration: 1.5s;
+  animation-iteration-count: infinite;
+}
+
+@keyframes pulse {
+  50% { background:#54ff54; }
+}
+
 #container > div:hover {
   background-color: rgb(232, 232, 232);
 }
@@ -122,6 +132,10 @@ body.recording .recording-indicator {
 
 @keyframes blink {
   50% { background:#b60404; transform: scale(1.2); }
+}
+
+@keyframes pulse {
+  50% { background:#54ff54; }
 }
 
 #lblplay {
