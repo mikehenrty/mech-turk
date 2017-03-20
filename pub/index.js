@@ -170,7 +170,6 @@ function initializeAndRun() {
 
   // When a recording is complete, pass it to the playback screen
   recordingScreenElement.addEventListener('record', function(event) {
-    document.querySelector('#record').textContent = 'Stop';
     recordingScreen.play(event.detail);
   });
 
@@ -246,7 +245,6 @@ function RecordingScreen(element, microphone) {
     clockreset();
     this.element.querySelector('#sentence').textContent = '"' + sentence + '"';
     this.element.hidden = false;
-    visualize();
   };
 
   this.play = function(recording) {
@@ -340,7 +338,6 @@ function RecordingScreen(element, microphone) {
     // But it was too hard to not record the end of the beep,
     // particularly on Chrome.
     if (!recording) {
-      document.querySelector('#levels').hidden = false;
       clockstart();
       recording = true;
       lastSoundTime = audioContext.currentTime;
@@ -358,7 +355,6 @@ function RecordingScreen(element, microphone) {
   function stopRecording() {
       if (recording) {
       canuploadandplay = true;
-      document.querySelector('#levels').hidden = true;
       clockstop();
       recording = false;
       document.body.className = '';
@@ -411,11 +407,6 @@ function RecordingScreen(element, microphone) {
     var context = levels.getContext('2d');
     context.clearRect(0, 0, levels.width, levels.height);
 
-    if (element.hidden) {
-      // If we've been hidden, return right away without calling rAF again.
-      return;
-    }
-
     // Get the FFT data
     analyzerNode.getFloatFrequencyData(frequencyBins);
 
@@ -435,7 +426,8 @@ function RecordingScreen(element, microphone) {
       if (value > maxValue) {
         maxValue = value;
       }
-      var height = levels.height * (value - MIN_DB_LEVEL) / dbRange;
+      var ratio = (value - MIN_DB_LEVEL) / dbRange;
+      var height = levels.height * ratio;
       if (height < 0 )
         continue;
 
@@ -448,8 +440,15 @@ function RecordingScreen(element, microphone) {
       // here other side
       var x_bar = i * barwidth;
 
+      var fillStyle = 'black';
+      if (recording) {
+        var r = 100 + (ratio) * 255 * 2.5;
+        var g = 24
+        var b = 24;
+        fillStyle = `rgb(${r}, ${g}, ${b})`;
+      }
 
-      context.fillStyle = 'red';
+      context.fillStyle = fillStyle
       context.fillRect(x_bar, total,
                        barwidth, height);
       context.fillStyle = 'white';
@@ -457,7 +456,7 @@ function RecordingScreen(element, microphone) {
           barwidth, height);
 
 
-      context.fillStyle = 'black';
+      context.fillStyle = fillStyle;
       context.fillRect(x_bar, inverso,
           barwidth, height);
       context.fillStyle = 'white';
@@ -480,8 +479,15 @@ function RecordingScreen(element, microphone) {
       }
     }
 
-    // Update the visualization the next time we can
-    requestAnimationFrame(visualize);
+    // Update visualization faster when recording.
+    /*
+    if (recording) {
+      requestAnimationFrame(visualize);
+    } else {
+      setTimeout(visualize, 70)
+    }
+    */
+    setTimeout(visualize, 50)
   }
 
   // The button responds to clicks to start and stop recording
@@ -552,6 +558,6 @@ function RecordingScreen(element, microphone) {
         (sec > 9 ? sec : "0" + sec) + "." + ms + 's'
   };
 
+  visualize();
 }
-
 

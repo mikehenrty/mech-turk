@@ -42,8 +42,11 @@ p {
 }
 
 #levels {
-    width: 100px;
-    height: 100px;
+  opacity: 0.2;
+}
+
+.recording #levels {
+  opacity: 1;
 }
 
 #divlevels {
