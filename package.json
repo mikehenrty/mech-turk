@@ -2,15 +2,12 @@
   "name": "mechturk",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
+  "main": "server/server.js",
   "dependencies": {
     "aws-sdk": "2.28.0",
     "jsonfile": "2.4.0",
-    "node-static": "0.7.9"
+    "node-static": "0.7.9",
+    "gulp": "3.9.1",
+    "gulp-nodemon": "2.2.1"
   }
 }
