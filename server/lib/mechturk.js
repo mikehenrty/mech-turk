@@ -95,21 +95,16 @@ MechTurk.prototype._getAssigments = function(NextToken) {
   return this._listReviewableHITs(NextToken)
     .then(r => {
       results = r;
-      console.log(results);
       return promiseMap(this, this._listAssignmentsForHIT, results.HITs);
     })
     .then(r => {
       r.forEach(hit => {
         assignments = assignments.concat(hit.Assignments);
       });
-      if (results.NextToken) {
-        return this._getAssigments(results.NextToken)
-          .then(r => {
-            console.log('deeper', r);
-            return assignments.concat(r);
-          });
-      }
-      return assignments;
+      return {
+        assignments: assignments,
+        NextToken: results.NextToken
+      };
     });
 };
 
@@ -127,20 +122,28 @@ MechTurk.prototype.list = function() {
   });
 };
 
-MechTurk.prototype.approve = function() {
-  return this._getAssigments()
-    .then(assignments => {
-      if (assignments.length === 0) {
-        return 0;
-      }
+MechTurk.prototype._approveAll = function(NextToken) {
+  return this._getAssigments(NextToken)
+    .then(data => {
+      var assignments = data.assignments;
+      var next = data.NextToken;
 
       return promiseMap(this, this._approveAssignment, assignments.map(a => {
         return a.AssignmentId;
-      }))
-      .then(() => {
-        return assignments.length;
+      })).then(() => {
+        if (!next) {
+          return assignments.length;
+        }
+
+        return this._approveAll(next).then(r => {
+          return assignments.length + r;
+        });
       });
-    })
+    });
+};
+
+MechTurk.prototype.approve = function() {
+  return this._approveAll()
     .then(approved => {
       console.log(`approved ${approved} assignments`);
     });
