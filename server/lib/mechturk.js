@@ -39,7 +39,7 @@ function MechTurk() {
 }
 
 MechTurk.prototype._deleteHIT = function(HITId) {
-  return promisify(this._mt, this._mt.deleteHIT, { HITId });
+  return promisify(this._mt, this._mt.deleteHIT, { HITId: HITId });
 };
 
 MechTurk.prototype._createHIT = function(options) {
@@ -114,6 +114,30 @@ MechTurk.prototype._getAssigments = function(NextToken) {
     });
 };
 
+MechTurk.prototype.trim = function(NextToken) {
+  var results;
+
+  return this._listHITs(NextToken).then(hits => {
+    var results = hits;
+
+    if (!hits.NumResults) {
+      return;
+    }
+
+    hits.HITs.forEach(hit => {
+      this._deleteHIT(hit.HITId).then(results => {
+        console.log('delete results', results);
+      }).catch(e => {
+        console.error('error delete', e);
+      });
+    });
+
+    if (results.NextToken) {
+      return this.list(results.NextToken);
+    }
+  });
+};
+
 MechTurk.prototype.list = function(NextToken) {
   var results;
 
@@ -123,6 +147,7 @@ MechTurk.prototype.list = function(NextToken) {
     if (!hits.NumResults) {
       return;
     }
+
 
     hits.HITs.forEach(hit => {
       console.log(`hit ${hit.HITId.substr(0,4)} ${hit.HITStatus}`);
@@ -161,34 +186,12 @@ MechTurk.prototype.approve = function() {
     });
 };
 
-MechTurk.prototype.trim = function(NextToken) {
-  var results;
-
-  return this._listHITs(NextToken)
-    .then(r => {
-      results = r;
+      /* Useful for later?
       return Promise.all(results.HITs.map(hit => {
         var pending = hit.NumberOfAssignmentsPending;
         var available = hit.NumberOfAssignmentsAvailable;
         var completed = hit.NumberOfAssignmentsCompleted;
-
-        if (pending + available + completed === 0) {
-          console.log('got a useless one', hit.HITId.substr(0,4));
-          return this._deleteHIT(hit.HITId);
-        }
-        return true;
-      })).then(r => {
-        if (results.NextToken) {
-          return this.trim(results.NextToken);
-        }
-      });
-    })
-    .then(results => {
-      if (!NextToken) {
-        console.log('here are the results', results);
-      }
-    });
-};
+      */
 
 MechTurk.prototype.add = function() {
   return this._getQuestion()
