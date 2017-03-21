@@ -42,12 +42,16 @@ checkPlatformSupport()
   .catch(displayErrorMessage);
 
 function getQuery() {
+  if (window._query) {
+    return window._query;
+  }
   var query = location.search.substr(1);
   var result = {};
   query.split("&").forEach(function(part) {
     var item = part.split("=");
     result[item[0]] = decodeURIComponent(item[1]);
   });
+  window._query = result;
   return result;
 }
 
@@ -174,11 +178,13 @@ function initializeAndRun() {
   });
 
   // If the user clicks 'Upload' on the playback screen, do the upload
-  // and switch back to the recording screen for a new sentence
+  // and submit the form.
   recordingScreenElement.addEventListener('upload', function(event) {
-    document.getElementById('assignmentId').form.submit();
-    // upload(currentDirectory, event.detail);
-    // switchToRecordingScreen(true);
+    upload(event.detail).then((something) => {
+      document.getElementById('assignmentId').form.submit();
+    }).catch(function(e) {
+      displayErrorMessage(ERR_UPLOAD_FAILED);
+    });
   });
 
   // If the user clicks 'Discard', switch back to the recording screen
@@ -204,30 +210,28 @@ function initializeAndRun() {
   }
 
   // Upload a recording using the fetch API to do an HTTP POST
-  function upload(directory, recording) {
+  function upload(recording) {
     if (!recording.type) {
       // Chrome doesn't give the blob a type
       recording = new Blob([recording], {type:'audio/webm;codecs=opus'});
     }
 
     var headers = new Headers();
-    headers.append("uid", localStorage.getUserInfoGiven);
+    headers.append('uid', getQuery().workerId);
+    headers.append('sentence', currentSentence);
 
-    fetch('/upload/' + directory,
-      { method: 'POST', headers: headers, body: recording })
-      .then(function(response) {
-        if (response.status !== 200) {
-          displayErrorMessage(ERR_UPLOAD_FAILED + ' ' + response.status + ' ' +
-                              response.statusText);
-        } else {
-          // sum one
-          totalsess++;
-          recordingScreen.discards();
-        }
-      })
-      .catch(function() {
-        displayErrorMessage(ERR_UPLOAD_FAILED);
-      });
+    return fetch('/upload/', {
+      method: 'POST',
+      headers: headers,
+      body: recording
+    })
+
+    .then(function(response) {
+      if (response.status !== 200) {
+        thow (ERR_UPLOAD_FAILED);
+      }
+      return response;
+    });
   }
 
   // Finally, we start the app off by displaying the recording screen
@@ -285,6 +289,19 @@ function RecordingScreen(element, microphone) {
   analyzerNode.connect(outputNode);
   // and set up the recorder
   var recorder = new MediaRecorder(outputNode.stream);
+  var chunks = [];
+
+  recorder.ondataavailable = function(e) {
+    chunks.push(e.data);
+  };
+
+  recorder.onstop = function() {
+    recordButton.className = '';
+    var blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
+    element.dispatchEvent(new CustomEvent('record', {
+      detail: blob
+    }));
+  };
 
   // Set up the analyzer node, and allocate an array for its data
   // FFT size 64 gives us 32 bins. But those bins hold frequencies up to
@@ -355,27 +372,12 @@ function RecordingScreen(element, microphone) {
   }
 
   function stopRecording() {
-      if (recording) {
+    if (recording) {
       canuploadandplay = true;
       clockstop();
       recording = false;
       document.body.className = '';
       recordButton.className = 'disabled'; // disabled 'till after the beep
-      recorder.ondataavailable = function(event) {
-        // Only call us once
-        recorder.ondataavailable = null;
-
-        // Beep to tell the user the recording is done
-        beep(STOP_BEEP_HZ, STOP_BEEP_S).then(function() {
-          // Broadcast an event containing the recorded blob
-          // This will switch to the playback screen
-          element.dispatchEvent(new CustomEvent('record', {
-            detail: event.data
-          }));
-
-          recordButton.className = '';
-        });
-      };
       recorder.stop();
       document.querySelector('#lblrecord').textContent = 'Re-record';
       document.querySelector('#playButton').classList.add('active');
@@ -384,24 +386,6 @@ function RecordingScreen(element, microphone) {
       element.querySelector('#playimg').src = "imgs/Triangle-09-on.png";
       element.querySelector('#submitimg').src = "imgs/CheckMark-on.png";
     }
-  }
-
-  // A WebAudio utility to do simple beeps
-  function beep(hertz, duration, volume) {
-    return new Promise(function(resolve, reject) {
-      var beeper = audioContext.createOscillator();
-      var startTime = audioContext.currentTime;
-      var endTime = startTime + duration;
-      beeper.connect(beeperVolume);
-      beeper.frequency.value = hertz;
-      beeperVolume.gain.value = volume || 0.3 ; // soft by default
-      beeper.start();
-      beeper.stop(endTime);
-      beeper.onended = function() {
-        beeper.disconnect();
-        resolve();
-      };
-    });
   }
 
   function visualize() {
