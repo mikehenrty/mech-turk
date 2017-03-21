@@ -41,7 +41,7 @@ function saveClip(request) {
       fs.writeFile(path.join(folder, now + '.txt'), sentence, f());
     }, () => {
       console.log('file written', file);
-      resolve();
+      resolve(now);
     }).onError(reject);
   });
 }
@@ -50,9 +50,9 @@ jsonfile.readFile(CONFIG_FILE, function(err, config) {
   var port = config.port || DEFAULT_PORT;
   require('http').createServer(function (request, response) {
     if (request.url === '/upload/' && request.method === 'POST') {
-      saveClip(request).then(() => {
+      saveClip(request).then(timestamp => {
         response.writeHead(200);
-        response.end('Thanks for your contribution!');
+        response.end('' + timestamp);
       }).catch(e => {
         response.writeHead(500);
         console.error('saving clip error', e, e.stack);

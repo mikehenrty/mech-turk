@@ -180,7 +180,8 @@ function initializeAndRun() {
   // If the user clicks 'Upload' on the playback screen, do the upload
   // and submit the form.
   recordingScreenElement.addEventListener('upload', function(event) {
-    upload(event.detail).then((something) => {
+    upload(event.detail).then(data => {
+      document.getElementById('serverstamp').value = data;
       document.getElementById('assignmentId').form.submit();
     }).catch(function(e) {
       displayErrorMessage(ERR_UPLOAD_FAILED);
@@ -230,7 +231,7 @@ function initializeAndRun() {
       if (response.status !== 200) {
         thow (ERR_UPLOAD_FAILED);
       }
-      return response;
+      return response.text();
     });
   }
 
