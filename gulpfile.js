@@ -3,10 +3,14 @@ var nodemon = require('gulp-nodemon');
 var jshint = require('gulp-jshint');
 var shell = require('gulp-shell');
 var path = require('path');
+var pm2 = require('pm2');
+var ff = require('ff');
+var jsonfile = require('jsonfile');
 
 const PATH_JS = __dirname + '/pub/js/';
 const PATH_SERVER = __dirname + '/server/';
 const CONFIG_FILE = __dirname + '/config.json';
+const APP_NAME = 'mechturk';
 
 gulp.task('npm-install', shell.task(['npm install']));
 
@@ -58,6 +62,26 @@ gulp.task('turk', () => {
       return mechturk.list();
       break;
   }
+});
+
+gulp.task('deploy', ['npm-install', 'lint'], (done) => {
+  var f = ff(() => {
+    pm2.connect(f.wait());
+  }, () => {
+    jsonfile.readFile(CONFIG_FILE, f());
+    pm2.stop(APP_NAME, f.waitPlain());
+  }, (config) => {
+    pm2.start({
+      name: APP_NAME,
+      script: "server/server.js",
+      output: config.logfile || "log.txt",
+      error: config.logfile || "log.txt",
+    }, f());
+  }).onComplete((err) => {
+    err && console.log('prod error', err);
+    pm2.disconnect();
+    done();
+  });
 });
 
 gulp.task('default', ['lint', 'watch', 'listen']);
