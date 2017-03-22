@@ -14,6 +14,7 @@ function saveClip(request) {
   var info = request.headers;
   var uid = info.uid;
   var sentence = info.sentence;
+  var assignmentId = info.assignmentId;
 
   return new Promise((resolve, reject) => {
     var extension = '.ogg';  // Firefox gives us opus in ogg
@@ -24,9 +25,8 @@ function saveClip(request) {
     }
 
     // if the folder does not exist, we create it
-    var now = Date.now();
     var folder = path.join(UPLOAD_PATH, uid);
-    var file = path.join(folder, now + extension);
+    var file = path.join(folder, assignmentId + extension);
 
     var f = ff(() => {
       fs.exists(folder, f.slotPlain());
@@ -38,10 +38,10 @@ function saveClip(request) {
       var writeStream = fs.createWriteStream(file);
       request.pipe(writeStream);
       request.on('end', f());
-      fs.writeFile(path.join(folder, now + '.txt'), sentence, f());
+      fs.writeFile(path.join(folder, assignmentId + '.txt'), sentence, f());
     }, () => {
       console.log('file written', file);
-      resolve(now);
+      resolve(assignmentId);
     }).onError(reject);
   });
 }
