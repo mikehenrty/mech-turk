@@ -43,25 +43,13 @@ gulp.task('watch', () => {
 
 gulp.task('turk', () => {
   var mechturk = require('./server/lib/mechturk.js');
-  // command comes in --arg form.
-  switch (process.argv[3]) {
-    case '--add':
-      return mechturk.add();
-      break;
+  var command = process.argv[3].substr(2); // trim unwanted dashes '--'.
 
-    case '--trim':
-      return mechturk.trim();
-      break;
-
-    case '--approve':
-      return mechturk.approve();
-      break;
-
-    case '--list':
-    default:
-      return mechturk.list();
-      break;
+  if (typeof mechturk[command] === 'function') {
+    return mechturk[command](process.argv[4]);
   }
+
+  console.error('unrecognized turk command', command);
 });
 
 gulp.task('deploy', ['npm-install', 'lint'], (done) => {
