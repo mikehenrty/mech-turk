@@ -68,6 +68,15 @@ MechTurk.prototype._listReviewableHITs = function(NextToken) {
   return promisify(this._mt, this._mt.listReviewableHITs, options);
 };
 
+MechTurk.prototype._updatHITReviewStatus = function(id, Revert) {
+  // Default to setting hit to Reviewing.
+  Revert = typeof Revert === 'undefined' ? false : Revert;
+  return promisify(this._mt, this._mt.updateHITReviewStatus, {
+    HITId: id,
+    Revert: Revert
+  });
+};
+
 MechTurk.prototype._deleteHIT = function(id) {
   return promisify(this._mt, this._mt.deleteHIT, {
     HITId: id,
@@ -151,6 +160,7 @@ MechTurk.prototype.list = function(NextToken) {
 
     hits.HITs.forEach(hit => {
       console.log(`hit ${hit.HITId.substr(0,4)} ${hit.HITStatus}`);
+      console.log(hit);
     });
 
     if (results.NextToken) {
@@ -158,6 +168,63 @@ MechTurk.prototype.list = function(NextToken) {
     }
   });
 };
+
+MechTurk.prototype._runOnAllHits = function(method, NextToken) {
+  return this._listHITs(NextToken)
+    .then(results => {
+      var hits = results.HITs;
+      var next = results.NextToken;
+
+      return promiseMap(this, method, hits)
+        .then(results => {
+          if (!next) {
+            return hits.length;
+          }
+
+          return this._runOnAllHits(method, next).then(r => {
+            return hits.length + r;
+          });
+        });
+    });
+};
+
+/*
+MechTurk.prototype._reviewAll = function(NextToken) {
+  return this._listReviewableHITs(NextToken)
+    .then(results => {
+      var hits = results.HITs;
+      var next = results.NextToken;
+
+      return promiseMap(this, (hit) => {
+        var HITId = hit.HITId;
+        console.log('hit', hit);
+
+        return Promise.all([
+          this._updatHITReviewStatus(HITId, false),
+          (function createVerifyHITs() {
+            return this._listAssignmentsForHIT({ HITId: HITId })
+              .then(results => {
+                console.log('did we get in here?', results);
+                results.Assignments.forEach(assignment => {
+                  console.log('found assignment', assignment);
+                  //this.addVerify()
+                });
+
+
+                if (results.NextToken) {
+                  return createVerifyHITs.call(this, results.NextToken);
+                }
+              });
+          }).call(this)
+        ]);
+      }, hits)
+
+      .then((results) => {
+        console.log('got some results');
+      });
+    });
+};
+*/
 
 MechTurk.prototype._approveAll = function(NextToken) {
   return this._getAssigments(NextToken)
@@ -168,6 +235,7 @@ MechTurk.prototype._approveAll = function(NextToken) {
       return promiseMap(this, this._approveAssignment, assignments.map(a => {
         return a.AssignmentId;
       })).then(() => {
+
         if (!next) {
           return assignments.length;
         }
@@ -193,13 +261,29 @@ MechTurk.prototype.approve = function() {
         var completed = hit.NumberOfAssignmentsCompleted;
       */
 
+MechTurk.prototype.review = function() {
+  return this._reviewAll();
+};
+
+MechTurk.prototype.reset = function() {
+  var count = 0;
+  return this._runOnAllHits(hit => {
+    if (hit.HITStatus === 'Reviewing') {
+      ++count;
+      return this._updatHITReviewStatus(hit.HITId, true);
+    }
+  }).then(results => {
+    console.log(`reset ${count} out of ${results} HITs`);
+  });
+};
+
 MechTurk.prototype.add = function() {
   return this._getQuestion()
     .then(question => {
       return this._createHIT({
         Title: Q_TITLE,
         Description: Q_DESC,
-        MaxAssignments: 1,
+        MaxAssignments: 5,
         LifetimeInSeconds: 3600,
         AssignmentDurationInSeconds: 600,
         Reward:'0.05',
@@ -216,5 +300,33 @@ MechTurk.prototype.add = function() {
       console.log('new hit created', hit.Title, hit.HITId.substr(0, 4));
     });
 };
+
+/*
+
+MechTurk.prototype.addVerify = function(AssignmentId) {
+  return this._getQuestion()
+    .then(question => {
+      return this._createHIT({
+        Title: Q_TITLE,
+        Description: 'Verify this souns',
+        MaxAssignments: 1,
+        LifetimeInSeconds: 3600,
+        AssignmentDurationInSeconds: 600,
+        Reward:'0.05',
+        Question: question,
+        RequesterAnnotation: AssignmentId,
+        QualificationRequirements:[{
+          QualificationTypeId:'00000000000000000071',
+          Comparator: "In",
+          LocaleValues: [{Country:'US'}, {Country: 'DE'}]
+        }]
+      });
+    })
+    .then(hit => {
+      hit = hit.HIT;
+      console.log('new hit created', hit.Title, hit.HITId.substr(0, 4));
+    });
+};
+*/
 
 module.exports = new MechTurk();
