@@ -247,9 +247,7 @@ MechTurk.prototype.list = function(NextToken) {
 };
 
 MechTurk.prototype.add = function(count) {
-  this._question.add({
-    Title: 'Michael'
-  });
+  return this._question.add();
 };
 
 module.exports = new MechTurk();
