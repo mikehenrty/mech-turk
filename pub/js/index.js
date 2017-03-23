@@ -220,7 +220,7 @@ function initializeAndRun() {
     var headers = new Headers();
     headers.append('uid', getQuery().workerId);
     headers.append('sentence', currentSentence);
-    headers.append('assignmentId', getQuery().assignmentId);
+    headers.append('assignmentid', getQuery().assignmentId);
 
     return fetch('/upload/', {
       method: 'POST',
