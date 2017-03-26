@@ -113,6 +113,9 @@ function verifyAssignment(verifyid) {
   var query = getQuery();
   clip.src = SOUNDCLIP_URL + query.previousworkerid + '/' +  verifyid;
   document.getElementById('original-excerpt').textContent = query.excerpt;
+  document.querySelector('[name=previousworkerid]').value =
+    query.previousworkerid;
+  document.querySelector('[name=previousassignmentid]').value = verifyid;
 }
 
 // Use getUserMedia() to get access to the user's microphone.
