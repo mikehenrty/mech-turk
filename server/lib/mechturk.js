@@ -220,28 +220,41 @@ MechTurk.prototype.reset = function() {
 };
 
 
-MechTurk.prototype.trim = function(NextToken) {
-  var results;
+MechTurk.prototype._deleteReviewable = function(NextToken) {
+  var deleted = 0;
 
   return this._listHITs(NextToken).then(hits => {
     var results = hits;
 
-    if (!hits.NumResults) {
-      return;
-    }
+    return promisify.map(this, hit => {
+      if (hit.HITStatus !== 'Rewiewable') {
+        console.log('not reviewable');
+        return 5;
+      }
 
-    hits.HITs.forEach(hit => {
-      this._deleteHIT(hit.HITId).then(results => {
-        console.log('delete results', results);
+      console.log('delteing');
+      return this._deleteHIT(hit.HITId).then(() => {
+        ++deleted;
       }).catch(e => {
-        console.error('error delete', e);
+        console.error('del error', e.message);
       });
-    });
+    }, hits.HITs)
 
-    if (results.NextToken) {
-      return this.list(results.NextToken);
-    }
+    .then(() => {
+      if (results.NextToken) {
+        return this._deleteReviewable(results.NextToken);
+      } else {
+        return deleted;
+      }
+    });
   });
+};
+
+MechTurk.prototype.trim = function() {
+  return this._deleteReviewable()
+    .then(results => {
+      console.log('deleted jobs', results);
+    });
 };
 
 MechTurk.prototype.list = function(NextToken) {
