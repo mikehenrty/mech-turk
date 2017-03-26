@@ -69,6 +69,11 @@ MechTurk.prototype._approveAssignment = function(id) {
   });
 };
 
+MechTurk.prototype._getSentenceFromAnswer = function(Answer) {
+  // We assume the only FreeText in the answer XML is the excerpt.
+  return /<FreeText>(.*?)<\/FreeText>/.exec(Answer)[1];
+};
+
 MechTurk.prototype._getAssigments = function(NextToken) {
   var assignments = [];
   var results = null;
@@ -76,7 +81,12 @@ MechTurk.prototype._getAssigments = function(NextToken) {
   return this._listReviewableHITs(NextToken)
     .then(r => {
       results = r;
-      return promisify.map(this, this._listAssignmentsForHIT, results.HITs);
+      var hits = results.HITs.map(hit => {
+        return {
+          HITId: hit.HITId
+        };
+      });
+      return promisify.map(this, this._listAssignmentsForHIT, hits);
     })
 
     .then(r => {
@@ -109,7 +119,6 @@ MechTurk.prototype._runOnAllHits = function(method, NextToken) {
     });
 };
 
-/*
 MechTurk.prototype._reviewAll = function(NextToken) {
   return this._listReviewableHITs(NextToken)
     .then(results => {
@@ -118,34 +127,45 @@ MechTurk.prototype._reviewAll = function(NextToken) {
 
       return promisify.map(this, (hit) => {
         var HITId = hit.HITId;
-        console.log('hit', hit);
 
-        return Promise.all([
-          this._updatHITReviewStatus(HITId, false),
-          (function createVerifyHITs() {
-            return this._listAssignmentsForHIT({ HITId: HITId })
-              .then(results => {
-                console.log('did we get in here?', results);
-                results.Assignments.forEach(assignment => {
-                  console.log('found assignment', assignment);
-                  //this.addVerify()
-                });
+        return (function createVerifyHITs(NextToken) {
+          var results;
 
+          return this._listAssignmentsForHIT({
+            HITId: HITId,
+            NextToken: NextToken
+          })
 
-                if (results.NextToken) {
-                  return createVerifyHITs.call(this, results.NextToken);
-                }
-              });
-          }).call(this)
-        ]);
+          .then(r => {
+            results = r;
+            var as = results.Assignments;
+            return promisify.map(this._question, this._question.addVerify,
+                                 as.map((a) => {
+              return {
+                AssignmentId: a.AssignmentId,
+                WorkerId: a.WorkerId,
+                excerpt: this._getSentenceFromAnswer(a.Answer)
+              };
+            }));
+          })
+
+          .then(() => {
+            if (results.NextToken) {
+              return createVerifyHITs.call(this, results.NextToken);
+            }
+          });
+        }).call(this)
+
+        .then(() => {
+          this._updatHITReviewStatus(HITId, false);
+        });
       }, hits)
 
       .then((results) => {
-        console.log('got some results');
+        console.log('verify jobs created', results.length);
       });
     });
 };
-*/
 
 MechTurk.prototype._approveAll = function(NextToken) {
   return this._getAssigments(NextToken)
@@ -237,7 +257,6 @@ MechTurk.prototype.list = function(NextToken) {
 
     hits.HITs.forEach(hit => {
       console.log(`hit ${hit.HITId.substr(0,4)} ${hit.HITStatus}`);
-      console.log(hit);
     });
 
     if (results.NextToken) {

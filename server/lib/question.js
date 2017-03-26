@@ -37,9 +37,12 @@ Question.prototype._getQuestionXMLTemplate = function(url, height) {
     </ExternalQuestion>`;
 };
 
-Question.prototype.add = function(options) {
-  options = Object.assign({}, DEFAULT_OPTIONS, options);
-  options.Question = this._getQuestionXMLTemplate();
+Question.prototype.add = function(o) {
+  var options = Object.assign({}, DEFAULT_OPTIONS, o);
+  if (!options.Question) {
+    options.Question = this._getQuestionXMLTemplate();
+  }
+
   return this._createHIT(options)
     .then(hit => {
       hit = hit.HIT;
@@ -47,32 +50,15 @@ Question.prototype.add = function(options) {
     });
 };
 
-/*
-
-Question.prototype.addVerify = function(AssignmentId) {
-  return this._getQuestion()
-    .then(question => {
-      return this._createHIT({
-        Title: Q_TITLE,
-        Description: 'Verify this souns',
-        MaxAssignments: 1,
-        LifetimeInSeconds: 3600,
-        AssignmentDurationInSeconds: 600,
-        Reward:'0.05',
-        Question: question,
-        RequesterAnnotation: AssignmentId,
-        QualificationRequirements:[{
-          QualificationTypeId:'00000000000000000071',
-          Comparator: "In",
-          LocaleValues: [{Country:'US'}, {Country: 'DE'}]
-        }]
-      });
-    })
-    .then(hit => {
-      hit = hit.HIT;
-      console.log('new hit created', hit.Title, hit.HITId.substr(0, 4));
-    });
+Question.prototype.addVerify = function(info) {
+  var options = {
+    Title: 'VoiceBank - Verify'
+  };
+  var url = BASE_URL + '?verifyid=' + info.AssignmentId +
+                       '&amp;previousworkerid=' + info.WorkerId +
+                       '&amp;excerpt=' + encodeURIComponent(info.excerpt);
+  options.Question = this._getQuestionXMLTemplate(url);
+  return this.add(options);
 };
-*/
 
 module.exports = Question;
