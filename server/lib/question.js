@@ -87,6 +87,9 @@ Question.prototype._addWithType = function(type, o) {
     .then(hit => {
       console.log('new hit created', hit.HIT.Title,
                   hit.HIT.HITTypeId.substr(0, 4));
+      console.log(
+          "https://workersandbox.mturk.com/mturk/preview?groupId=" +
+          hit.HIT.HITTypeId);
     });
 };
 
