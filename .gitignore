@@ -1,4 +1,7 @@
 node_modules
 config.json
 server/upload/
+server/rejected/
+server/verified/
 log.txt
+server
