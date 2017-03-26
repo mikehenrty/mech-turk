@@ -3,6 +3,7 @@ var static = require('node-static');
 var jsonfile = require('jsonfile');
 var fs = require('fs');
 var ff = require('ff');
+var ms = require('mediaserver');
 
 const DEFAULT_PORT = 9000;
 const CONFIG_FILE = path.join(__dirname, '..', 'config.json');
@@ -46,18 +47,31 @@ function saveClip(request) {
   });
 }
 
+function sendFile(request, response) {
+  var ids = request.url.split('/');
+  var assignmentId = ids.pop();
+  var workerid = ids.pop();
+
+  var filepath = path.resolve(UPLOAD_PATH, workerid, assignmentId + '.ogg');
+  ms.pipe(request, response, filepath);
+}
+
 jsonfile.readFile(CONFIG_FILE, function(err, config) {
   var port = config.port || DEFAULT_PORT;
   require('http').createServer(function (request, response) {
-    if (request.url === '/upload/' && request.method === 'POST') {
-      saveClip(request).then(timestamp => {
-        response.writeHead(200);
-        response.end('' + timestamp);
-      }).catch(e => {
-        response.writeHead(500);
-        console.error('saving clip error', e, e.stack);
-        response.end('Error');
-      });
+    if (request.url.includes('/upload/')) {
+      if (request.method === 'POST') {
+        saveClip(request).then(timestamp => {
+          response.writeHead(200);
+          response.end('' + timestamp);
+        }).catch(e => {
+          response.writeHead(500);
+          console.error('saving clip error', e, e.stack);
+          response.end('Error');
+        });
+      } else {
+        sendFile(request, response);
+      }
 
       return;
     }

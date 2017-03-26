@@ -12,6 +12,7 @@
     "gulp-shell": "0.6.3",
     "jsonfile": "2.4.0",
     "jshint": "2.9.4",
+    "mediaserver": "0.1.0",
     "node-static": "0.7.9",
     "pm2": "2.4.2",
     "promise": "7.1.1"

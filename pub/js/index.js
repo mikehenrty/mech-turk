@@ -32,13 +32,23 @@ var ERR_UPLOAD_FAILED = 'Uploading your recording to the server failed. ' +
 var ERR_DATA_FAILED = 'Submitting your profile data failed. ' +
     'This may be a temporary problem. Please try again.';
 
+var SOUNDCLIP_URL = '/upload/';
+
 // This is the program startup sequence.
 checkPlatformSupport()
   .then(validatePage)
-  .then(function() {
-    return Promise.all([getMicrophone(), getSentences()]);
+  .then(function(verifyid) {
+    var rec = document.getElementById('record-screen');
+    var ver = document.getElementById('verify-screen');
+    if (verifyid) {
+      ver.hidden = false;
+      return verifyAssignment(verifyid);
+    } else {
+      rec.hidden = false;
+      return Promise.all([getMicrophone(), getSentences()])
+        .then(initializeAndRun);
+    }
   })
-  .then(initializeAndRun)
   .catch(displayErrorMessage);
 
 function getQuery() {
@@ -88,8 +98,21 @@ function validatePage() {
     return Promise.reject(ERR_PREVIEW);
   }
 
-  var assignmentId = document.getElementById('assignmentId');
-  assignmentId.value = query.assignmentId;
+  // Load forms with required assignmentId field.
+  var inputs = document.querySelectorAll('.assignmentId');
+  [].forEach.call(inputs, input => {
+    console.log('passing assignmentid', input);
+    input.value = query.assignmentId;
+  });
+
+  return query.verifyid;
+}
+
+function verifyAssignment(verifyid) {
+  var clip = document.getElementById('clip');
+  var query = getQuery();
+  clip.src = SOUNDCLIP_URL + query.previousworkerid + '/' +  verifyid;
+  document.getElementById('original-excerpt').textContent = query.excerpt;
 }
 
 // Use getUserMedia() to get access to the user's microphone.
@@ -137,7 +160,10 @@ function getSentences() {
 // If anything goes wrong in the app startup sequence, this function
 // is called to tell the user what went wrong
 function displayErrorMessage(error) {
-  document.querySelector('#record-screen').classList.add('disabled');
+  var recordScreen = document.querySelector('#record-screen');
+  recordScreen.classList.add('disabled');
+  recordScreen.hidden = false;
+
   document.querySelector('#error-screen').hidden = false;
   document.querySelector('#error-message').textContent = error;
   document.querySelector('#title').textContent = '';
@@ -181,7 +207,6 @@ function initializeAndRun() {
   // and submit the form.
   recordingScreenElement.addEventListener('upload', function(event) {
     upload(event.detail).then(data => {
-      document.getElementById('serverstamp').value = data;
       document.getElementById('assignmentId').form.submit();
     }).catch(function(e) {
       displayErrorMessage(ERR_UPLOAD_FAILED);
@@ -200,6 +225,7 @@ function initializeAndRun() {
     if (needNewSentence || !currentSentence) {
       var n = Math.floor(Math.random() * sentences.length);
       currentSentence = sentences[n];
+      document.getElementById('excerpt').value = currentSentence;
       currentDirectory = directories[n];
     }
 
@@ -222,7 +248,7 @@ function initializeAndRun() {
     headers.append('sentence', currentSentence);
     headers.append('assignmentid', getQuery().assignmentId);
 
-    return fetch('/upload/', {
+    return fetch(SOUNDCLIP_URL, {
       method: 'POST',
       headers: headers,
       body: recording
