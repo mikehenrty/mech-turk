@@ -14,7 +14,7 @@ function saveClip(request) {
   var info = request.headers;
   var uid = info.uid;
   var sentence = info.sentence;
-  var assignmentId = info.assignmentId;
+  var assignmentId = info.assignmentid;
 
   return new Promise((resolve, reject) => {
     var extension = '.ogg';  // Firefox gives us opus in ogg
