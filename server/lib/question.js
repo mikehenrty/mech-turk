@@ -52,6 +52,20 @@ Question.prototype._createHITWithHITType = function(options) {
   return promisify(this._mt, this._mt.createHITWithHITType, options);
 };
 
+Question.prototype.getRecordHitType = function() {
+  return this._createHITType(HIT_RECORD)
+    .then(results => {
+      return results.HITTypeId;
+    });
+};
+
+Question.prototype.getVerifyHitType = function() {
+  return this._createHITType(HIT_VERIFY)
+    .then(results => {
+      return results.HITTypeId;
+    });
+};
+
 Question.prototype._getQuestionXMLTemplate = function(url, height) {
   url = url || BASE_URL;
   height = height || 400;

@@ -7,6 +7,10 @@ const ENDPOINT = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com';
 
 const DEFAULT_FEEDBACK = "Thanks for the great work!";
 
+function little(str) {
+  return str.substr(0, 5) + str.substr(-5);
+}
+
 function MechTurk() {
   AWS.config.loadFromPath(CONFIG_FILE);
   this._mt = new AWS.MTurk({ endpoint: ENDPOINT });
@@ -119,52 +123,94 @@ MechTurk.prototype._runOnAllHits = function(method, NextToken) {
     });
 };
 
-MechTurk.prototype._reviewAll = function(NextToken) {
-  return this._listReviewableHITs(NextToken)
-    .then(results => {
-      var hits = results.HITs;
-      var next = results.NextToken;
+MechTurk.prototype._reviewAll = function(recordType, verifyType, NextToken) {
+  return Promise.all([
+    recordType || this._question.getRecordHitType(),
+    verifyType || this._question.getVerifyHitType(),
+    this._listHITs(NextToken)
+  ])
 
-      return promisify.map(this, (hit) => {
-        var HITId = hit.HITId;
+  .then(results => {
+    recordType = results[0];
+    verifyType = results[1];
+    var hitResults = results[2];
 
-        return (function createVerifyHITs(NextToken) {
-          var results;
-
-          return this._listAssignmentsForHIT({
-            HITId: HITId,
-            NextToken: NextToken
-          })
-
-          .then(r => {
-            results = r;
-            var as = results.Assignments;
-            return promisify.map(this._question, this._question.addVerify,
-                                 as.map((a) => {
-              return {
-                AssignmentId: a.AssignmentId,
-                WorkerId: a.WorkerId,
-                excerpt: this._getSentenceFromAnswer(a.Answer)
-              };
-            }));
-          })
-
-          .then(() => {
-            if (results.NextToken) {
-              return createVerifyHITs.call(this, results.NextToken);
-            }
-          });
-        }).call(this)
-
-        .then(() => {
-          this._updatHITReviewStatus(HITId, false);
-        });
-      }, hits)
-
-      .then((results) => {
-        console.log('verify jobs created', results.length);
-      });
+    var next = hitResults.NextToken;
+    var hits = hitResults.HITs.filter(hit => {
+      return hit.HITStatus === 'Reviewable';
     });
+
+    return this._processHits(hits, recordType, verifyType)
+      .then((results) => {
+        if (next) {
+          return this._reviewAll(recordType, verifyType, next);
+         }
+      });
+  });
+};
+
+MechTurk.prototype._createVerify = function(assignments) {
+  var params = assignments.map(a => {
+    return {
+      AssignmentId: a.AssignmentId,
+      WorkerId: a.WorkerId,
+      excerpt: this._getSentenceFromAnswer(a.Answer)
+    };
+  });
+
+  return promisify.map(this._question, this._question.addVerify, params);
+};
+
+MechTurk.prototype._doVerify = function(assignments) {
+  console.log(assignments);
+  return Promise.resolve(assignments);
+};
+
+MechTurk.prototype._processHits = function(hits, recordType, verifyType) {
+  return promisify.map(this, hit => {
+    var HITId = hit.HITId;
+    var HITTypeId = hit.HITTypeId;
+
+    // We need createVerifyHITs as an entrypoint for psuedo recursion.
+    return (function createVerifyHITs(NextToken) {
+      var results;
+
+      console.log('calling list for', little(HITId));
+      return this._listAssignmentsForHIT({
+        HITId: HITId,
+        NextToken: NextToken
+      })
+
+      .then(r => {
+        results = r;
+        if (HITTypeId === recordType) {
+          console.log('record assignment', HITId.substr(0,5),
+                      results.Assignments.length);
+          return this._createVerify(results.Assignments);
+        } else if (HITTypeId === verifyType) {
+          console.log('verify assignment', HITId.substr(0,5),
+                      results.Assignments.length);
+          return this._doVerify(results.Assignments);
+        } else {
+          console.error('Unrecognized hit type', hit);
+        }
+      })
+
+      .then(() => {
+        if (results.NextToken) {
+          console.log('woulda, and em', little(HITId),
+            little(results.NextToken));
+          return createVerifyHITs.call(this, results.NextToken);
+        }
+      });
+
+    }).call(this)
+
+    .then(() => {
+      console.log('updating status', little(HITId));
+      this._updatHITReviewStatus(HITId, false);
+    });
+  }, hits);
 };
 
 MechTurk.prototype._approveAll = function(NextToken) {
