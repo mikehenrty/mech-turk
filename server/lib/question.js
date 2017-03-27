@@ -1,6 +1,7 @@
 const promisify = require('./promisify');
 
 const BASE_URL = 'https://mechturk.henretty.us/';
+const HIT_URL = "https://workersandbox.mturk.com/mturk/preview?groupId=";
 
 const DEFAULT_OPTIONS = {
   LifetimeInSeconds: 3600,
@@ -53,17 +54,44 @@ Question.prototype._createHITWithHITType = function(options) {
 };
 
 Question.prototype.getRecordHitType = function() {
+  if (this._recordType) {
+    return Promise.resolve(this._recordType);
+  }
+
   return this._createHITType(HIT_RECORD)
     .then(results => {
+      this._recordType = results.HITTypeId;
       return results.HITTypeId;
     });
 };
 
 Question.prototype.getVerifyHitType = function() {
+  if (this._verifyType) {
+    return Promise.resolve(this._verifyType);
+  }
+
   return this._createHITType(HIT_VERIFY)
     .then(results => {
+      this._verifyType = results.HITTypeId;
       return results.HITTypeId;
     });
+};
+
+Question.prototype.getType = function(typeId) {
+  return Promise.all([
+    this.getRecordHitType(),
+    this.getVerifyHitType()
+  ])
+
+  .then((recordType, verifyType) => {
+    if (typeId === recordType) {
+      return 'recording';
+    } else if (typeId === verifyType) {
+      return 'verifying';
+    } else {
+      return 'unrecognized';
+    }
+  });
 };
 
 Question.prototype._getQuestionXMLTemplate = function(url, height) {
@@ -79,18 +107,16 @@ Question.prototype._addWithType = function(type, o) {
   var options = Object.assign({}, DEFAULT_OPTIONS, o);
   return this._createHITType(type)
 
-    .then(results => {
-      options.HITTypeId = results.HITTypeId;
-      return this._createHITWithHITType(options);
-    })
+  .then(results => {
+    options.HITTypeId = results.HITTypeId;
+    return this._createHITWithHITType(options);
+  })
 
-    .then(hit => {
-      console.log('new hit created', hit.HIT.Title,
-                  hit.HIT.HITTypeId.substr(0, 4));
-      console.log(
-          "https://workersandbox.mturk.com/mturk/preview?groupId=" +
-          hit.HIT.HITTypeId);
-    });
+  .then(hit => {
+    hit = hit.HIT;
+    console.log('new hit created', hit.Title, hit.HITTypeId.substr(0, 4));
+    console.log(HIT_URL + hit.HITTypeId);
+  });
 };
 
 Question.prototype.add = function(options) {
@@ -99,14 +125,15 @@ Question.prototype.add = function(options) {
   });
 };
 
-// We expect AssignmentId, WorkerId, and excerpt in the info array.
+// We expect HITId, AssignmentId, WorkerId, and excerpt in the info array.
 Question.prototype.addVerify = function(info) {
   var url = BASE_URL + '?verifyid=' + info.AssignmentId +
                        '&amp;previousworkerid=' + info.WorkerId +
                        '&amp;excerpt=' + encodeURIComponent(info.excerpt);
 
   return this._addWithType(HIT_VERIFY, {
-    Question: this._getQuestionXMLTemplate(url)
+    Question: this._getQuestionXMLTemplate(url),
+    RequesterAnnotation: info.HITId
   });
 };
 
