@@ -157,7 +157,6 @@ function displayErrorMessage(error) {
   recordScreen.classList.add('disabled');
   recordScreen.hidden = false;
 
-  document.querySelector('#error-screen').hidden = false;
   setMessage(error);
   document.querySelector('#title').textContent = '';
 
@@ -165,15 +164,16 @@ function displayErrorMessage(error) {
     // Fatal error. Just show a table of supported browsers
     document.querySelector('#error-reload').hidden = true;
     document.querySelector('#error-supported').hidden = false;
+    document.querySelector('#error-screen').hidden = false;
   }
   else if (error === ERR_PREVIEW) {
-    // Fatal error. Just show a table of supported browsers
     document.querySelector('#error-reload').hidden = true;
     document.querySelector('#error-supported').hidden = true;
   } else {
     // Otherwise, the user can correct the errror. Invite them to reload
     document.querySelector('#error-reload').hidden = false;
     document.querySelector('#error-supported').hidden = true;
+    document.querySelector('#error-screen').hidden = false;
   }
 }
 

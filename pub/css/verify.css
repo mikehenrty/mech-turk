@@ -137,7 +137,7 @@ hr {
 }
 
 .answers {
-  margin-left: 15px;
+  margin: 0 0 0 15px;
   padding-left: 15px;
   border-radius: 4px;
 }
@@ -190,6 +190,7 @@ button.active,
   text-align: center;
 }
 
+#clip,
 #player {
   width: 250px;
   border-radius: 15px;

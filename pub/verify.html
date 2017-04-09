@@ -14,16 +14,14 @@
         Help us verify that the sound clip matches the sentence.
       </div>
     </div>
-    <form id="container" class="panel" action="https://workersandbox.mturk.com/mturk/externalSubmit" method="POST">
+    <form class="panel" action="https://workersandbox.mturk.com/mturk/externalSubmit" method="POST">
       <div class="panel-head">Instructions</div>
       <div class="panel-content">
         <div class="left">
-          <p>Play the voice clip and listen to the words.</p>
+          <p id="original-excerpt"></p>
           <audio id="clip" controls="controls"></audio>
         </div>
         <div class="right">
-          <p>Did you hear this sentence: ...?</p>
-          <p id="original-excerpt"></p>
           <ul class="answers">
             <li>
               <input id="yes" type="radio" name="answer" value="yes">
