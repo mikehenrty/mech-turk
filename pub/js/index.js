@@ -158,7 +158,7 @@ function displayErrorMessage(error) {
   recordScreen.hidden = false;
 
   document.querySelector('#error-screen').hidden = false;
-  document.querySelector('#message').textContent = error;
+  setMessage(error);
   document.querySelector('#title').textContent = '';
 
   if (error === ERR_PLATFORM) {
@@ -332,7 +332,8 @@ function RecordingScreen(element, microphone) {
   // 22kHz or more, and we only care about visualizing lower frequencies
   // which is where most human voice lies, so we use fewer bins
   analyzerNode.fftSize = 64;
-  var frequencyBins = new Float32Array(14);
+  var bufferLength = analyzerNode.frequencyBinCount;
+  var frequencyBins = new Float32Array(bufferLength);
 
   // Another audio node used by the beep() function
   var beeperVolume = audioContext.createGain();
@@ -404,7 +405,7 @@ function RecordingScreen(element, microphone) {
       document.body.className = '';
       recordButton.className = 'disabled'; // disabled 'till after the beep
       recorder.stop();
-      document.querySelector('#recordButton').textContent = 'Re-record';
+      document.querySelector('#recordButton').textContent = 'Record';
       document.querySelector('#player').className = ''; // Remove disabled.
       document.querySelector('#uploadButton').classList.add('active');
       // TODO: replace this with text indicators.
