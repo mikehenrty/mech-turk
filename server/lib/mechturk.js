@@ -26,6 +26,23 @@ const COMMANDS = {
   'trim': 'Delete all deletable jobs.'
 };
 
+function printStack() {
+  console.log((new Error().stack));
+}
+
+function countResults(results) {
+  if (typeof results === 'number') {
+    return results;
+  }
+  if (Array.isArray(results)) {
+    return results.reduce((acc, result) => {
+      return acc + result;
+    }, 0);
+  }
+
+  console.error('could not count unrecognized results', results);
+}
+
 function little(str) {
   return str.substr(0, 4) + str.substr(-4);
 }
@@ -182,8 +199,13 @@ MechTurk.prototype._reviewAll = function(recordType, verifyType, NextToken) {
     return this._processHits(hits, recordType, verifyType)
       .then((results) => {
         if (next) {
-          return this._reviewAll(recordType, verifyType, next);
+          return this._reviewAll(recordType, verifyType, next)
+            .then(r => {
+              return countResults(results) + countResults(r);
+            });
          }
+
+        return countResults(results);
       });
   });
 };
@@ -340,9 +362,14 @@ MechTurk.prototype._processHits = function(hits, recordType, verifyType) {
 
     .then(results => {
       if (HITTypeId === recordType) {
-        return this._updatHITReviewStatus(HITId, false);
+        return this._updatHITReviewStatus(HITId, false).then(t=> {
+          return results;
+        });
       } else if (HITTypeId === verifyType) {
-        return this._finalizeVerify(HITId, hit.RequesterAnnotation);
+        return this._finalizeVerify(HITId, hit.RequesterAnnotation)
+          .then(t=> {
+            return results;
+          });
       }
     });
   }, hits);
@@ -378,7 +405,12 @@ MechTurk.prototype.approve = function() {
 };
 
 MechTurk.prototype.review = function() {
-  return this._reviewAll();
+  return this._reviewAll().then(reviewed => {
+    console.log('reviewed', reviewed);
+    if (reviewed < 1) {
+      console.log('no reviewable jobs');
+    }
+  });
 };
 
 MechTurk.prototype.reset = function() {
@@ -506,6 +538,14 @@ MechTurk.prototype.runCommand = function(command, parameter) {
   if (typeof this[command] !== 'function') {
     console.error('Error, undefined function for command', command);
     return;
+  }
+
+  if (command !== 'list') {
+    return this.list().then(results => {
+      return this[command](parameter);
+    }).then(results => {
+      return this.list();
+    });
   }
 
   return this[command](parameter);
