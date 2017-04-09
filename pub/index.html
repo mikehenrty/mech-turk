@@ -7,22 +7,6 @@
   </head>
   <body>
     <div id="main_div">
-      <div id="verify-screen" class="screen disabled" hidden>
-        <audio id="clip" controls="controls">
-        </audio>
-        <p id="original-excerpt"></p>
-        <form id="container" action="https://workersandbox.mturk.com/mturk/externalSubmit" method="POST">
-          <ul>
-            <li><input type="radio" name="answer" value="yes">Yes</li>
-            <li><input type="radio" name="answer" value="no">No</li>
-            <li><input type="radio" name="answer" value="bad">Can't tell</li>
-          </ul>
-          <input type="hidden" name="previousworkerid">
-          <input class="assignmentId" type="hidden" name="previousassignmentid">
-          <input class="assignmentId" type="hidden" name="assignmentId">
-          <input type="submit">Submit</button>
-        </form>
-      </div>
       <div id="record-screen" class="screen disabled" hidden>
         <img id="wordmark" src="imgs/wordmark_project-voicebank-gray.png">
 

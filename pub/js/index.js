@@ -37,17 +37,11 @@ var SOUNDCLIP_URL = '/upload/';
 // This is the program startup sequence.
 checkPlatformSupport()
   .then(validatePage)
-  .then(function(verifyid) {
+  .then(function() {
     var rec = document.getElementById('record-screen');
-    var ver = document.getElementById('verify-screen');
-    if (verifyid) {
-      ver.hidden = false;
-      return verifyAssignment(verifyid);
-    } else {
-      rec.hidden = false;
-      return Promise.all([getMicrophone(), getSentences()])
-        .then(initializeAndRun);
-    }
+    rec.hidden = false;
+    return Promise.all([getMicrophone(), getSentences()])
+      .then(initializeAndRun);
   })
   .catch(displayErrorMessage);
 
@@ -104,18 +98,6 @@ function validatePage() {
     console.log('passing assignmentid', input);
     input.value = query.assignmentId;
   });
-
-  return query.verifyid;
-}
-
-function verifyAssignment(verifyid) {
-  var clip = document.getElementById('clip');
-  var query = getQuery();
-  clip.src = SOUNDCLIP_URL + query.previousworkerid + '/' +  verifyid;
-  document.getElementById('original-excerpt').textContent = query.excerpt;
-  document.querySelector('[name=previousworkerid]').value =
-    query.previousworkerid;
-  document.querySelector('[name=previousassignmentid]').value = verifyid;
 }
 
 // Use getUserMedia() to get access to the user's microphone.
