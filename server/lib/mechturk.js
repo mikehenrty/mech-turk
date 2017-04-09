@@ -16,6 +16,16 @@ const DEFAULT_FEEDBACK = "Thanks for the great work!";
 const REGEX_FREETEXT = '<FreeText>(.*?)<\/FreeText>';
 const REGEX_QUESTION = '<QuestionIdentifier>(.*?)<\/QuestionIdentifier>';
 
+const COMMANDS = {
+  'help': 'Display this help text.',
+  'list': 'List the current HITs and their status.',
+  'add': 'Add a new voice recording HIT.',
+  'review': 'Review current HITs',
+  'approve': 'Approve HITs.',
+  'reset': ' Reset reviewing status back to available.',
+  'trim': 'Delete all deletable jobs.'
+};
+
 function little(str) {
   return str.substr(0, 4) + str.substr(-4);
 }
@@ -476,6 +486,14 @@ MechTurk.prototype.list = function() {
 
 MechTurk.prototype.add = function(count) {
   return this._question.add();
+};
+
+MechTurk.prototype.help = function() {
+  console.log('\nUsage: `gulp turk --command`');
+  Object.keys(COMMANDS).forEach(command => {
+    console.log(`  --${command} - ${COMMANDS[command]}`);
+  });
+  console.log();
 };
 
 module.exports = new MechTurk();
