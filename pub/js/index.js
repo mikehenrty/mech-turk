@@ -34,10 +34,19 @@ var ERR_DATA_FAILED = 'Submitting your profile data failed. ' +
 
 var SOUNDCLIP_URL = '/upload/';
 
+var $ = document.querySelector.bind(document);
+
+function setMessage(message) {
+  var m = $('#message');
+  m.textContent = message;
+  m.className = 'panel';
+}
+
 // This is the program startup sequence.
 checkPlatformSupport()
   .then(validatePage)
   .then(function() {
+    setMessage('Loading...');
     var rec = document.getElementById('record-screen');
     rec.hidden = false;
     return Promise.all([getMicrophone(), getSentences()])
@@ -95,7 +104,6 @@ function validatePage() {
   // Load forms with required assignmentId field.
   var inputs = document.querySelectorAll('.assignmentId');
   [].forEach.call(inputs, input => {
-    console.log('passing assignmentid', input);
     input.value = query.assignmentId;
   });
 }
@@ -150,7 +158,7 @@ function displayErrorMessage(error) {
   recordScreen.hidden = false;
 
   document.querySelector('#error-screen').hidden = false;
-  document.querySelector('#error-message').textContent = error;
+  document.querySelector('#message').textContent = error;
   document.querySelector('#title').textContent = '';
 
   if (error === ERR_PLATFORM) {
@@ -174,6 +182,11 @@ function displayErrorMessage(error) {
 // screens, and sets up event handlers to switch back and forth between
 // those screens until the user gets tired of making recordings.
 function initializeAndRun() {
+  var m = $('#message');
+  m.className = 'panel disabled';
+  var o = $('#overlay');
+  o.className = 'disabled';
+
   document.querySelector('#record-screen').classList.remove('disabled');
   var totalsess = 0;
   // Get the DOM elements for the recording and playback screens
@@ -271,10 +284,8 @@ function RecordingScreen(element, microphone) {
   };
 
   this.discards = function() {
-    element.querySelector('#playimg').src = "imgs/Triangle-09-off.png";
-    element.querySelector('#submitimg').src = "imgs/CheckMark-off.png";
-      document.querySelector('#lblplay').style.color = "rgb(188,189,192)";
-      document.querySelector('#lblsubmit').style.color = "rgb(188,189,192)";
+    document.querySelector('#playButton').style.color = "rgb(188,189,192)";
+    document.querySelector('#uploadButton').style.color = "rgb(188,189,192)";
 
     canuploadandplay = false;
     this.recording = null;
@@ -377,8 +388,9 @@ function RecordingScreen(element, microphone) {
       // Without this argument to start(), Chrome will call dataavailable
       // very frequently.
       recorder.start(20000);
-      document.querySelector('#lblrecord').textContent = 'Stop';
-      document.querySelector('#divanim').className = 'recording-indicator';
+      document.querySelector('#recordButton').textContent = 'Stop';
+      // TODO: replace this with text indicators.
+      //document.querySelector('#divanim').className = 'recording-indicator';
       document.querySelector('#uploadButton').classList.remove('active');
       document.body.className = 'recording';
     }
@@ -392,12 +404,11 @@ function RecordingScreen(element, microphone) {
       document.body.className = '';
       recordButton.className = 'disabled'; // disabled 'till after the beep
       recorder.stop();
-      document.querySelector('#lblrecord').textContent = 'Re-record';
-      document.querySelector('#playButton').classList.add('active');
+      document.querySelector('#recordButton').textContent = 'Re-record';
+      document.querySelector('#player').className = ''; // Remove disabled.
       document.querySelector('#uploadButton').classList.add('active');
-      document.querySelector('#divanim').className = 'stopped-indicator';
-      element.querySelector('#playimg').src = "imgs/Triangle-09-on.png";
-      element.querySelector('#submitimg').src = "imgs/CheckMark-on.png";
+      // TODO: replace this with text indicators.
+      // document.querySelector('#divanim').className = 'stopped-indicator';
     }
   }
 

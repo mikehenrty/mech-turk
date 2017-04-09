@@ -156,12 +156,6 @@ body.recording .recording-indicator {
   color: rgb(0,174,239);
 }
 
-#wordmark {
-    width: auto;
-    height: 50px;
-    float: right;
-}
-
 .disabled > div:not(#error-screen):not(#instructions) {
   opacity: 0.3;
 }

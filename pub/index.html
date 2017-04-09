@@ -3,13 +3,12 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
     <meta charset="utf-8" />
     <title>Voice Bank</title>
-    <link href="./css/index.css" rel="stylesheet">
+    <link href="./css/verify.css" rel="stylesheet">
   </head>
   <body>
-    <div id="main_div">
+    <div id="content">
+      <p id="message" class="panel"></p>
       <div id="record-screen" class="screen disabled" hidden>
-        <img id="wordmark" src="imgs/wordmark_project-voicebank-gray.png">
-
         <div id="error-screen" class="screen" hidden>
           <p class="title" id="error-message"></p>
           <p hidden id="error-reload">
@@ -26,44 +25,50 @@
           </p>
         </div>
 
-        <div id="instructions">
-          <div id="title" class="title">Please grant microphone access</div>
+        <div id="overview" class="panel">
+          <div class="panel-head">Overview</div>
+          <div class="panel-content">
+            Record this sentence with your voice.
+          </div>
         </div>
-        <div id="player-box">
-          <div id="sentence" class="title"></div>
-          <form id="container" action="https://workersandbox.mturk.com/mturk/externalSubmit" method="POST">
-            <div id="recordButton">
-              <div id="divanim" class="stopped-indicator"></div>
-              <div id="lblrecord"> Record </div></div>
-            <div id="playButton">
-              <div style="float:left">
-                <img id="playimg" src="imgs/Triangle-09-off.png">
+
+        <div class="panel">
+          <div class="panel-head">Instructions</div>
+          <div class="panel-content">
+            <div id="instructions">
+              <div id="title" class="title">
+                Please grant microphone access
               </div>
-              <div id="lblplay">Play</div>
             </div>
-            <div id="uploadButton">
-              <div style="float:left;">
-                <img id="submitimg" src="imgs/CheckMark-off.png">
+            <div id="player-box">
+              <div id="sentence" class="title"></div>
+              <form id="container" action="https://workersandbox.mturk.com/mturk/externalSubmit" method="POST">
+                <button id="recordButton" type="button">Record</button>
+                <button id="playButton" type="button">Play</button>
+                <input id="excerpt" type="hidden" name="excerpt" value="">
+                <input id="assignmentId" class="assignmentId"
+                       type="hidden" name="assignmentId">
+
+                <div id="elapsedtime">00.0s</div>
+                <div id="divlevels">
+                  <canvas id="levels" width=100 height=100></canvas>
+                </div>
+                <audio id="player" controls="controls" class="disabled"></audio>
+                <hr />
+                <button id="uploadButton" type="button">Submit</button>
+              </form>
+              <div>
               </div>
-              <input id="excerpt" type="hidden" name="excerpt" value="">
-              <input id="assignmentId" class="assignmentId"
-                     type="hidden" name="assignmentId">
-              <div type="submit" id="lblsubmit">Submit</div>
-            </div>
-          </form>
-          <div>
-            <div id="elapsedtime">00.0s</div>
-            <div id="divlevels">
-              <canvas id="levels" width=100 height=100></canvas>
+
+              <input id="sensitivity" style="display: none" 
+                     type="range" min="1" max="200"></input>
+
             </div>
           </div>
-
-        </div><br>
-        <!-- hidden stuff -->
-        <input id="sensitivity" type="range" min="1" max="200"></input>
-        <audio id="player" controls></audio><br/>
+        </div>
       </div>
     </div>
+    <div id="overlay">
     <script defer src="./js/index.js"></script>
   </body>
 </html>

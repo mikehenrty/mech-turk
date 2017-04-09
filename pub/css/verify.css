@@ -95,7 +95,6 @@ hr {
   border-radius: 4px;
   border: 1px solid #428BCA;
   margin-bottom: 20px;
-  padding-bottom: 5px;
 }
 
 .panel > div {
@@ -117,6 +116,8 @@ hr {
   transition: transform 0.2s ease-in;
   padding: 10px 10px;
   margin: 0 0 10px;
+  position: relative;
+  z-index: 2;
 }
 
 #message.disabled {
@@ -144,9 +145,10 @@ hr {
   border: 1px solid #d10000;
 }
 
+#uploadButton,
 #submit-btn {
   margin: 2px auto;
-  display: inherit;
+  display: block;
 }
 
 #submit-btn.active {
@@ -174,4 +176,22 @@ hr {
 #overlay.disabled {
   pointer-events: none;
   opacity: 0;
+}
+
+/* main page */
+#divlevels {
+  display: inline-block;
+}
+
+#elapsedtime {
+  display: inline-block;
+}
+
+#player {
+  width: 250px;
+}
+
+#player.disabled {
+  opacity: 0.7;
+  pointer-events: none;
 }
