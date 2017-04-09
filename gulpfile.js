@@ -43,7 +43,8 @@ gulp.task('watch', () => {
 
 gulp.task('turk', () => {
   var mechturk = require('./server/lib/mechturk.js');
-  var command = process.argv[3].substr(2); // trim unwanted dashes '--'.
+  // trim unwanted dashes '--'.
+  var command = process.argv[3] && process.argv[3].substr(2);
   return mechturk.runCommand(command, process.argv[4]);
 });
 
