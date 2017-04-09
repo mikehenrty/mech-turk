@@ -44,12 +44,7 @@ gulp.task('watch', () => {
 gulp.task('turk', () => {
   var mechturk = require('./server/lib/mechturk.js');
   var command = process.argv[3].substr(2); // trim unwanted dashes '--'.
-
-  if (typeof mechturk[command] === 'function') {
-    return mechturk[command](process.argv[4]);
-  }
-
-  console.error('unrecognized turk command', command);
+  return mechturk.runCommand(command, process.argv[4]);
 });
 
 gulp.task('deploy', ['npm-install', 'lint'], (done) => {

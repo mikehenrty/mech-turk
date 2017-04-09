@@ -496,4 +496,19 @@ MechTurk.prototype.help = function() {
   console.log();
 };
 
+MechTurk.prototype.runCommand = function(command, parameter) {
+  if (!COMMANDS[command]) {
+    console.log('Unrecognized command', command);
+    this.help();
+    return;
+  }
+
+  if (typeof this[command] !== 'function') {
+    console.error('Error, undefined function for command', command);
+    return;
+  }
+
+  return this[command](parameter);
+};
+
 module.exports = new MechTurk();
