@@ -179,11 +179,13 @@ MechTurk.prototype._reviewAll = function(recordType, verifyType, NextToken) {
       return hit.HITStatus === 'Reviewable';
     });
 
-    return this._processHits(hits, recordType, verifyType)
-      .then((results) => {
+    return this._processHits(hits, recordType, verifyType).then((results) => {
         if (next) {
           return this._reviewAll(recordType, verifyType, next);
          }
+
+        console.log('finally returning results', results);
+        return results;
       });
   });
 };
@@ -206,6 +208,7 @@ MechTurk.prototype._processRecord = function(HITId, assignments) {
 
 MechTurk.prototype._processVerify = function(assignments) {
   var answers = assignments.map(assignment => {
+    console.log('assignment', assignment);
     return {
       HITId: assignment.HITId,
       id: assignment.AssignmentId,
@@ -339,10 +342,17 @@ MechTurk.prototype._processHits = function(hits, recordType, verifyType) {
     }).call(this)
 
     .then(results => {
+      console.log('getting something before', results);
       if (HITTypeId === recordType) {
-        return this._updatHITReviewStatus(HITId, false);
+        return this._updatHITReviewStatus(HITId, false).then(t=> {
+          console.log('update', t);
+          return results;
+        });
       } else if (HITTypeId === verifyType) {
-        return this._finalizeVerify(HITId, hit.RequesterAnnotation);
+        return this._finalizeVerify(HITId, hit.RequesterAnnotation).then(t=> {
+          console.log('finalize', t);
+          return results;
+        });
       }
     });
   }, hits);
@@ -378,7 +388,9 @@ MechTurk.prototype.approve = function() {
 };
 
 MechTurk.prototype.review = function() {
-  return this._reviewAll();
+  return this._reviewAll().then(results => {
+    console.log('got something', results);
+  });
 };
 
 MechTurk.prototype.reset = function() {
