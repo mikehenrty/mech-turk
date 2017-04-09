@@ -5,16 +5,16 @@ const glob = require('glob');
 const Question = require('./question');
 const promisify = require('./promisify');
 
-const ENDPOINT = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com';
 const CONFIG_FILE = __dirname + '/../../config.json';
 const UPLOAD_PATH = __dirname + '/../upload/';
 const VERIFIED_PATH = __dirname + '/../verified/';
 const REJECTED_PATH = __dirname + '/../rejected/';
 
-const DEFAULT_FEEDBACK = "Thanks for the great work!";
-
+const ENDPOINT = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com';
 const REGEX_FREETEXT = '<FreeText>(.*?)<\/FreeText>';
 const REGEX_QUESTION = '<QuestionIdentifier>(.*?)<\/QuestionIdentifier>';
+
+const DEFAULT_FEEDBACK = "Thanks for the great work!";
 
 const COMMANDS = {
   'help': 'Display this help text.',

@@ -1,6 +1,7 @@
 const promisify = require('./promisify');
 
 const BASE_URL = 'https://mechturk.henretty.us/';
+const VERIFY_URL = BASE_URL + 'verify.html';
 const HIT_URL = "https://workersandbox.mturk.com/mturk/preview?groupId=";
 
 const DEFAULT_OPTIONS = {
@@ -127,9 +128,9 @@ Question.prototype.add = function(options) {
 
 // We expect HITId, AssignmentId, WorkerId, and excerpt in the info array.
 Question.prototype.addVerify = function(info) {
-  var url = BASE_URL + '?verifyid=' + info.AssignmentId +
-                       '&amp;previousworkerid=' + info.WorkerId +
-                       '&amp;excerpt=' + encodeURIComponent(info.excerpt);
+  var url = VERIFY_URL + '?verifyid=' + info.AssignmentId +
+                          '&amp;previousworkerid=' + info.WorkerId +
+                          '&amp;excerpt=' + encodeURIComponent(info.excerpt);
 
   return this._addWithType(HIT_VERIFY, {
     Question: this._getQuestionXMLTemplate(url),

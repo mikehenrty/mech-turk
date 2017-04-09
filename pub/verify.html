@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Verify</title>
+  <link rel="stylesheet" href="css/verify.css">
+</head>
+<body>
+  <div id="content">
+    <p id="message" class="panel">Please Accept this HIT to continue.</p>
+    <div id="overview" class="panel">
+      <div class="panel-head">Overview</div>
+      <div class="panel-content">Listen to the recorded voice, and say whether the what was said correspondes
+      to the original text or not.</div>
+    </div>
+    <form id="container" class="panel" action="https://workersandbox.mturk.com/mturk/externalSubmit" method="POST">
+      <div class="panel-head">Instructions</div>
+      <div class="panel-content">
+        <div class="left">
+          <p>Play the voice clip and listen to the words.</p>
+          <audio id="clip" controls="controls"></audio>
+        </div>
+        <div class="right">
+          <p>Did you hear this sentence: ...?</p>
+          <p id="original-excerpt"></p>
+          <ul class="answers">
+            <li>
+              <input id="yes" type="radio" name="answer" value="yes">
+              <label for="yes">Yes, that is the sentence I heard.</label>
+            </li>
+            <li>
+              <input id="no" type="radio" name="answer" value="no">
+              <label for="no">No, that is not the sentence I heard.</label>
+            </li>
+            <li>
+              <input id="bad" type="radio" name="answer" value="bad">
+              <label for="bad">I could not understand the sentence.</label>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <hr />
+      <input type="hidden" name="previousworkerid">
+      <input class="assignmentId" type="hidden" name="previousassignmentid">
+      <input class="assignmentId" type="hidden" name="assignmentId">
+      <button id="submit-btn" type="button">Submit</button>
+    </form>
+  </div>
+  <div id="overlay"></div>
+  <script src="js/verify.js"></script>
+</body>
+</html>
