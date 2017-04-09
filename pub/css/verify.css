@@ -14,6 +14,7 @@ li {
 input[type=radio] {
   margin    : 0;
   padding   : 0;
+  outline: none;
 }
 
 input[type="radio"]:checked+label {
@@ -87,6 +88,7 @@ hr {
 #content {
   max-width: 800px;
   margin: 20px auto;
+  position: relative;
 }
 
 .panel {
@@ -94,7 +96,6 @@ hr {
   border: 1px solid #428BCA;
   margin-bottom: 20px;
   padding-bottom: 5px;
-  overflow: hidden;
 }
 
 .panel > div {
@@ -115,10 +116,16 @@ hr {
   background-color: #f2dede;
   transition: transform 0.2s ease-in;
   padding: 10px 10px;
+  margin: 0 0 10px;
 }
 
 #message.disabled {
   transform: scaleY(0);
+  position: absolute;
+}
+
+#clip {
+  width: 100%;
 }
 
 #original-excerpt {
@@ -128,6 +135,13 @@ hr {
 }
 
 .answers {
+  margin-left: 15px;
+  padding-left: 15px;
+  border-radius: 4px;
+}
+
+.answers.highlight {
+  border: 1px solid #d10000;
 }
 
 #submit-btn {

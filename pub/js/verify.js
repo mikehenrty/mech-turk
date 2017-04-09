@@ -47,6 +47,7 @@ function validateForm() {
 function checkForm() {
   if (!validateForm()) {
     setMessage('Must listen and select a value to submit.');
+    $('.answers').className = 'answers highlight';
     return false;
   }
 
