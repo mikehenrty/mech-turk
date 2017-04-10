@@ -143,6 +143,11 @@ hr {
   border-radius: 4px;
 }
 
+.answers.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .answers.highlight {
   border: 1px solid #d10000;
 }
@@ -211,6 +216,7 @@ button.active,
   border-radius: 15px;
 }
 
+#clip.disabled,
 #player.disabled {
   opacity: 0.3;
   pointer-events: none;

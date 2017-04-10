@@ -65,6 +65,9 @@ function onLoad() {
 
   let clip = document.getElementById('clip');
   clip.src = SOUNDCLIP_URL + query.previousworkerid + '/' +  query.verifyid;
+  clip.addEventListener('ended', () => {
+    $('.answers').className = 'answers'; // Remove disabled.
+  });
 
   $('#original-excerpt').textContent = `"${query.excerpt}"`;
   $('[name=previousworkerid]').value = query.previousworkerid;
