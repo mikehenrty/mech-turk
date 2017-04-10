@@ -133,7 +133,8 @@ hr {
 #original-excerpt {
   font-size: 1.3em;
   font-style: italic;
-  margin: 0 0 0 20px;
+  margin: 15px 0 0 20px;
+  text-align: center;
 }
 
 .answers {

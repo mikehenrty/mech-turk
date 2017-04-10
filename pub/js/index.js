@@ -8,6 +8,8 @@ var STOP_BEEP_HZ = 440;      // Frequency and duration of beep
 var STOP_BEEP_S = 0.3;
 var rightside = true;
 
+var REPLAY_TIMEOUT = 200;
+
 // The microphone stream we get from getUserMedia
 var microphone;
 
@@ -264,6 +266,18 @@ function RecordingScreen(element, microphone) {
   this.element = element;
   this.player = element.querySelector('#player');
 
+  // After REPLAY_TIMEOUT, replay the recorded clip.
+  this.player.addEventListener('canplaythrough', () => {
+    setTimeout(() => { this.player.play(); }, REPLAY_TIMEOUT);
+  });
+
+  // After player ended, make sure to enable submission (again).
+  this.player.addEventListener('ended', () => {
+    $('#recordButton').textContent = 'Record';
+    $('#player').className = ''; // Remove disabled.
+    $('#uploadButton').classList.add('active');
+  });
+
   // A RecordingScreen object has methods for hiding and showing.
   // Everything else is private inside this constructor
   this.show = function(sentence) {
@@ -400,9 +414,6 @@ function RecordingScreen(element, microphone) {
       document.body.className = '';
       recordButton.className = 'disabled'; // disabled 'till after the beep
       recorder.stop();
-      document.querySelector('#recordButton').textContent = 'Record';
-      document.querySelector('#player').className = ''; // Remove disabled.
-      document.querySelector('#uploadButton').classList.add('active');
       // TODO: replace this with text indicators.
       // document.querySelector('#divanim').className = 'stopped-indicator';
     }
