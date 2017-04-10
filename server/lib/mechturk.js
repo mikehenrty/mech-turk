@@ -588,6 +588,9 @@ MechTurk.prototype.runCommand = function(command, parameter) {
     return Promise.reject('unrec command:' + command);
   }
 
+  /*
+  // Debug output for funning server commands.
+  // Runs prints list before and after command.
   if (command !== 'list' && command !== 'stats') {
     return this.list().then(results => {
       return this[command](parameter);
@@ -595,6 +598,7 @@ MechTurk.prototype.runCommand = function(command, parameter) {
       return this.list();
     });
   }
+  */
 
   return this[command](parameter);
 };
