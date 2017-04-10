@@ -1,3 +1,5 @@
+'use strict';
+
 const AWS = require('aws-sdk');
 const path = require('path');
 const fs = require('fs-extra');
@@ -7,9 +9,12 @@ const promisify = require('./promisify');
 
 const CONFIG_FILE = __dirname + '/../../config.json';
 const UPLOAD_PATH = __dirname + '/../upload/';
-const RECORDED_PATH = path.resolve(UPLOAD_PATH, 'recorded');
-const VERIFIED_PATH = path.resolve(UPLOAD_PATH, 'verified');
-const REJECTED_PATH = path.resolve(UPLOAD_PATH, 'rejected');
+const RECORDED_DIR = 'recorded';
+const RECORDED_PATH = path.resolve(UPLOAD_PATH, RECORDED_DIR);
+const VERIFIED_DIR = 'verified';
+const VERIFIED_PATH = path.resolve(UPLOAD_PATH, VERIFIED_DIR);
+const REJECTED_DIR = 'rejected';
+const REJECTED_PATH = path.resolve(UPLOAD_PATH, REJECTED_DIR);
 
 const ENDPOINT = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com';
 const REGEX_FREETEXT = '<FreeText>(.*?)<\/FreeText>';
@@ -18,13 +23,14 @@ const REGEX_QUESTION = '<QuestionIdentifier>(.*?)<\/QuestionIdentifier>';
 const DEFAULT_FEEDBACK = "Thanks for the great work!";
 
 const COMMANDS = {
-  'help': 'Display this help text.',
-  'list': 'List the current HITs and their status.',
-  'add': 'Add a new voice recording HIT.',
-  'review': 'Review current HITs',
+  'help'   : 'Display this help text.',
+  'list'   : 'List the current HITs and their status.',
+  'stats'  : 'List the status of the current uploaded clips.',
+  'add'    : 'Add a new voice recording HIT.',
+  'review' : 'Review current HITs',
   'approve': 'Approve HITs.',
-  'reset': ' Reset reviewing status back to available.',
-  'trim': 'Delete all deletable jobs.'
+  'reset'  : 'Reset reviewing status back to available.',
+  'trim'   : 'Delete all deletable jobs.'
 };
 
 function printStack() {
@@ -70,7 +76,7 @@ MechTurk.prototype._listAssignmentsForHIT = function(options) {
 };
 
 MechTurk.prototype._listHITs = function(NextToken) {
-  var options = {};
+  let options = {};
   if (NextToken) {
     options.NextToken = NextToken;
   }
@@ -78,7 +84,7 @@ MechTurk.prototype._listHITs = function(NextToken) {
 };
 
 MechTurk.prototype._listReviewableHITs = function(NextToken) {
-  var options = {};
+  let options = {};
   if (NextToken) {
     options.NextToken = NextToken;
   }
@@ -120,12 +126,12 @@ MechTurk.prototype._getSentenceFromAnswer = function(Answer) {
 };
 
 MechTurk.prototype._getInfoFromVerify = function(Answer) {
-  var answer = {};
-  var reFree = new RegExp(REGEX_FREETEXT, 'g');
-  var reQuestion = new RegExp(REGEX_QUESTION, 'g');
+  let answer = {};
+  let reFree = new RegExp(REGEX_FREETEXT, 'g');
+  let reQuestion = new RegExp(REGEX_QUESTION, 'g');
 
-  var matchFree = reFree.exec(Answer);
-  var matchQuestion = reQuestion.exec(Answer);
+  let matchFree = reFree.exec(Answer);
+  let matchQuestion = reQuestion.exec(Answer);
   while (matchFree && matchQuestion) {
     answer[matchQuestion[1]] = matchFree[1];
     matchFree = reFree.exec(Answer);
@@ -136,13 +142,13 @@ MechTurk.prototype._getInfoFromVerify = function(Answer) {
 };
 
 MechTurk.prototype._getAssigments = function(NextToken) {
-  var assignments = [];
-  var results = null;
+  let assignments = [];
+  let results = null;
 
   return this._listReviewableHITs(NextToken)
     .then(r => {
       results = r;
-      var hits = results.HITs.map(hit => {
+      let hits = results.HITs.map(hit => {
         return {
           HITId: hit.HITId
         };
@@ -164,8 +170,8 @@ MechTurk.prototype._getAssigments = function(NextToken) {
 MechTurk.prototype._runOnAllHits = function(method, NextToken) {
   return this._listHITs(NextToken)
     .then(results => {
-      var hits = results.HITs;
-      var next = results.NextToken;
+      let hits = results.HITs;
+      let next = results.NextToken;
 
       return promisify.map(this, method, hits)
         .then(results => {
@@ -190,10 +196,10 @@ MechTurk.prototype._reviewAll = function(recordType, verifyType, NextToken) {
   .then(results => {
     recordType = results[0];
     verifyType = results[1];
-    var hitResults = results[2];
+    let hitResults = results[2];
 
-    var next = hitResults.NextToken;
-    var hits = hitResults.HITs.filter(hit => {
+    let next = hitResults.NextToken;
+    let hits = hitResults.HITs.filter(hit => {
       return hit.HITStatus === 'Reviewable';
     });
 
@@ -212,7 +218,7 @@ MechTurk.prototype._reviewAll = function(recordType, verifyType, NextToken) {
 };
 
 MechTurk.prototype._processRecord = function(HITId, assignments) {
-  var params = assignments.map(a => {
+  let params = assignments.map(a => {
     return {
       HITId: HITId,
       AssignmentId: a.AssignmentId,
@@ -228,7 +234,7 @@ MechTurk.prototype._processRecord = function(HITId, assignments) {
 };
 
 MechTurk.prototype._processVerify = function(assignments) {
-  var answers = assignments.map(assignment => {
+  let answers = assignments.map(assignment => {
     return {
       HITId: assignment.HITId,
       id: assignment.AssignmentId,
@@ -237,14 +243,14 @@ MechTurk.prototype._processVerify = function(assignments) {
   });
 
   return promisify.map(this, results => {
-    var AssignmentId = results.id;
-    var answer = results.answer;
-    var pattern = path.resolve(RECORDED_PATH, answer.previousworkerid,
+    let AssignmentId = results.id;
+    let answer = results.answer;
+    let pattern = path.resolve(RECORDED_PATH, answer.previousworkerid,
                                answer.previousassignmentid + '.*');
     return this._glob(pattern)
 
     .then(files => {
-      var destination;
+      let destination;
       files = files || [];
       if (answer.answer === 'yes') {
         destination = path.resolve(VERIFIED_PATH, answer.previousworkerid);
@@ -256,7 +262,7 @@ MechTurk.prototype._processVerify = function(assignments) {
       }
 
       return promisify.map(this, f => {
-        var p = path.resolve(destination, path.basename(f));
+        let p = path.resolve(destination, path.basename(f));
         return promisify(fs, fs.move, [f, p]);
       }, files)
 
@@ -280,8 +286,8 @@ MechTurk.prototype._processVerify = function(assignments) {
 };
 
 MechTurk.prototype._approveAssignmentsForHit = function(HITId, NextToken) {
-  var count = 0;
-  var next;
+  let count = 0;
+  let next;
 
   return this._listAssignmentsForHIT({
     HITId: HITId,
@@ -290,7 +296,7 @@ MechTurk.prototype._approveAssignmentsForHit = function(HITId, NextToken) {
 
   .then(results => {
     next = results.NextToken;
-    var assignments = results.Assignments.map(a => {
+    let assignments = results.Assignments.map(a => {
       return a.AssignmentId;
     });
     return promisify.map(this, this._approveAssignment, assignments);
@@ -321,14 +327,14 @@ MechTurk.prototype._finalizeVerify = function(verifyId, recordId) {
 
 MechTurk.prototype._processHits = function(hits, recordType, verifyType) {
   return promisify.map(this, hit => {
-    var HITId = hit.HITId;
-    var HITTypeId = hit.HITTypeId;
-    var count = 0;
+    let HITId = hit.HITId;
+    let HITTypeId = hit.HITTypeId;
+    let count = 0;
 
     // We need createVerifyHITs as an entrypoint for psuedo recursion.
     // This will process all assignments for hit.
     return (function createVerifyHITs(NextToken) {
-      var results;
+      let results;
 
       return this._listAssignmentsForHIT({
         HITId: HITId,
@@ -381,8 +387,8 @@ MechTurk.prototype._processHits = function(hits, recordType, verifyType) {
 MechTurk.prototype._approveAll = function(NextToken) {
   return this._getAssigments(NextToken)
     .then(data => {
-      var assignments = data.assignments;
-      var next = data.NextToken;
+      let assignments = data.assignments;
+      let next = data.NextToken;
 
       return promisify.map(this, this._approveAssignment, assignments.map(a => {
         return a.AssignmentId;
@@ -416,7 +422,7 @@ MechTurk.prototype.review = function() {
 };
 
 MechTurk.prototype.reset = function() {
-  var count = 0;
+  let count = 0;
   return this._runOnAllHits(hit => {
     if (hit.HITStatus === 'Reviewing') {
       ++count;
@@ -429,8 +435,8 @@ MechTurk.prototype.reset = function() {
 
 
 MechTurk.prototype._deleteReviewable = function(NextToken) {
-  var deleted = 0;
-  var next;
+  let deleted = 0;
+  let next;
 
   return this._listHITs(NextToken)
     .then(hits => {
@@ -468,20 +474,20 @@ MechTurk.prototype.trim = function() {
 };
 
 MechTurk.prototype._listAll = function(recordType, verifyType, NextToken) {
-  var count = 0;
+  let count = 0;
 
   return this._listHITs(NextToken).then(hits => {
     hits.HITs.forEach(hit => {
-      var type = 'Unrecognized';
+      let type = 'Unrecognized';
       if (hit.HITTypeId === recordType) {
         type = 'Recording';
       } else if (hit.HITTypeId === verifyType) {
         type = 'Verifying';
       }
 
-      var pending = hit.NumberOfAssignmentsPending;
-      var available = hit.NumberOfAssignmentsAvailable;
-      var completed = hit.NumberOfAssignmentsCompleted;
+      let pending = hit.NumberOfAssignmentsPending;
+      let available = hit.NumberOfAssignmentsAvailable;
+      let completed = hit.NumberOfAssignmentsCompleted;
       console.log(little(hit.HITId), type, hit.HITStatus,
                   pending, 'pending',
                   available, 'available',
@@ -506,8 +512,8 @@ MechTurk.prototype.list = function() {
   ])
 
   .then(results => {
-    var recordType = results[0];
-    var verifyType = results[1];
+    let recordType = results[0];
+    let verifyType = results[1];
     return this._listAll(recordType, verifyType);
   })
 
@@ -530,6 +536,46 @@ MechTurk.prototype.help = function() {
   console.log();
 };
 
+MechTurk.prototype.stats = function() {
+  let rec = 0;
+  let ver = 0;
+  let rej = 0;
+
+  return new Promise((resolve, reject) => {
+    let walk = require('walk');
+    let walker = walk.walk(UPLOAD_PATH);
+
+    walker.on('file', (root, fileStats, next) => {
+      if (fileStats.name === 'README.txt') {
+        next();
+        return;
+      }
+
+      if (fileStats.name.substr(-4) !== '.txt') {
+        next();
+        return;
+      }
+
+      if (root.indexOf(RECORDED_DIR) !== -1) {
+        ++rec;
+      } else if (root.indexOf(VERIFIED_DIR) !== -1) {
+        ++ver;
+      } else if (root.indexOf(REJECTED_DIR) !== -1) {
+        ++rej;
+      } else {
+        console.error('unrecognized text file', root, fileStats.name);
+      }
+      next();
+    });
+
+    walker.on('end', () => {
+      console.log(`${rec} unverified, ${ver} verified, ${rej} rejected`);
+      resolve();
+    });
+
+  });
+};
+
 MechTurk.prototype.runCommand = function(command, parameter) {
   if (!COMMANDS[command]) {
     console.log('Unrecognized command', command);
@@ -542,7 +588,7 @@ MechTurk.prototype.runCommand = function(command, parameter) {
     return;
   }
 
-  if (command !== 'list') {
+  if (command !== 'list' && command !== 'stats') {
     return this.list().then(results => {
       return this[command](parameter);
     }).then(results => {

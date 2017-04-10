@@ -9,14 +9,15 @@
     "fs-extra": "2.1.2",
     "glob": "7.1.1 ",
     "gulp": "3.9.1",
-    "gulp-nodemon": "2.2.1",
     "gulp-jshint": "2.0.4",
+    "gulp-nodemon": "2.2.1",
     "gulp-shell": "0.6.3",
-    "jsonfile": "2.4.0",
     "jshint": "2.9.4",
+    "jsonfile": "2.4.0",
     "mediaserver": "0.1.0",
     "node-static": "0.7.9",
     "pm2": "2.4.2",
-    "promise": "7.1.1"
+    "promise": "7.1.1",
+    "walk": "2.3.9"
   }
 }

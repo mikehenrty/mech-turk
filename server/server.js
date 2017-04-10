@@ -6,8 +6,8 @@ var ff = require('ff');
 var ms = require('mediaserver');
 
 const DEFAULT_PORT = 9000;
-const CONFIG_FILE = path.join(__dirname, '..', 'config.json');
-const UPLOAD_PATH = path.join(__dirname, 'upload');
+const CONFIG_FILE = path.resolve(__dirname, '..', 'config.json');
+const UPLOAD_PATH = path.resolve(__dirname, 'upload', 'recorded');
 
 var fileServer = new static.Server('./pub', { cache: false });
 
