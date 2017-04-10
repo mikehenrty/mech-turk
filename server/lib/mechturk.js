@@ -26,6 +26,23 @@ const COMMANDS = {
   'trim': 'Delete all deletable jobs.'
 };
 
+function printStack() {
+  console.log((new Error().stack));
+}
+
+function countResults(results) {
+  if (typeof results === 'number') {
+    return results;
+  }
+  if (Array.isArray(results)) {
+    return results.reduce((acc, result) => {
+      return acc + result;
+    }, 0);
+  }
+
+  console.error('could not count unrecognized results', results);
+}
+
 function little(str) {
   return str.substr(0, 4) + str.substr(-4);
 }
@@ -114,7 +131,6 @@ MechTurk.prototype._getInfoFromVerify = function(Answer) {
     matchQuestion = reQuestion.exec(Answer);
   }
 
-  console.log('getting an answer', answer);
   return answer;
 };
 
@@ -180,13 +196,16 @@ MechTurk.prototype._reviewAll = function(recordType, verifyType, NextToken) {
       return hit.HITStatus === 'Reviewable';
     });
 
-    return this._processHits(hits, recordType, verifyType).then((results) => {
+    return this._processHits(hits, recordType, verifyType)
+      .then((results) => {
         if (next) {
-          return this._reviewAll(recordType, verifyType, next);
+          return this._reviewAll(recordType, verifyType, next)
+            .then(r => {
+              return countResults(results) + countResults(r);
+            });
          }
 
-        console.log('finally returning results', results);
-        return results;
+        return countResults(results);
       });
   });
 };
@@ -221,7 +240,6 @@ MechTurk.prototype._processVerify = function(assignments) {
     var answer = results.answer;
     var pattern = path.resolve(UPLOAD_PATH, answer.previousworkerid,
                                answer.previousassignmentid + '.*');
-    console.log('looking for files', pattern);
     return this._glob(pattern)
 
     .then(files => {
@@ -345,24 +363,18 @@ MechTurk.prototype._processHits = function(hits, recordType, verifyType) {
     }).call(this)
 
     .then(results => {
-      console.log('getting something before', results);
       if (HITTypeId === recordType) {
         return this._updatHITReviewStatus(HITId, false).then(t=> {
-          console.log('update', results);
           return results;
         });
       } else if (HITTypeId === verifyType) {
-        return this._finalizeVerify(HITId, hit.RequesterAnnotation).then(t=> {
-          console.log('finalize', results);
-          return results;
-        });
+        return this._finalizeVerify(HITId, hit.RequesterAnnotation)
+          .then(t=> {
+            return results;
+          });
       }
     });
-  }, hits)
-    .then(r => {
-      console.log('is it the same thing here2?', r);
-      return r;
-    });
+  }, hits);
 };
 
 MechTurk.prototype._approveAll = function(NextToken) {
@@ -395,8 +407,11 @@ MechTurk.prototype.approve = function() {
 };
 
 MechTurk.prototype.review = function() {
-  return this._reviewAll().then(results => {
-    console.log('got something', results);
+  return this._reviewAll().then(reviewed => {
+    console.log('reviewed', reviewed);
+    if (reviewed < 1) {
+      console.log('no reviewable jobs');
+    }
   });
 };
 
@@ -525,6 +540,14 @@ MechTurk.prototype.runCommand = function(command, parameter) {
   if (typeof this[command] !== 'function') {
     console.error('Error, undefined function for command', command);
     return;
+  }
+
+  if (command !== 'list') {
+    return this.list().then(results => {
+      return this[command](parameter);
+    }).then(results => {
+      return this.list();
+    });
   }
 
   return this[command](parameter);
