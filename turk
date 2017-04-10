@@ -1,2 +1,5 @@
-#!/bin/bash
-gulp turk --"$1"
+#!/usr/bin/env node
+'use strict';
+let mechturk = require('./server/lib/mechturk.js');
+let command = process.argv[2];
+mechturk.runCommand(command, process.argv[3]);
