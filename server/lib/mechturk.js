@@ -525,7 +525,13 @@ MechTurk.prototype.list = function() {
 };
 
 MechTurk.prototype.add = function(count) {
-  return this._question.add();
+  // Default to add 1 record HIT.
+  count = typeof count === 'undefined' ? 1 : count;
+  let promises = [];
+  for (let i = 0; i < count; i++) {
+    promises.push(this._question.add());
+  }
+  return Promise.all(promises);
 };
 
 MechTurk.prototype.help = function() {
