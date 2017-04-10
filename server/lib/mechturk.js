@@ -580,12 +580,12 @@ MechTurk.prototype.runCommand = function(command, parameter) {
   if (!COMMANDS[command]) {
     console.log('Unrecognized command', command);
     this.help();
-    return;
+    return Promise.resolve();
   }
 
   if (typeof this[command] !== 'function') {
     console.error('Error, undefined function for command', command);
-    return;
+    return Promise.reject('unrec command:' + command);
   }
 
   if (command !== 'list' && command !== 'stats') {
