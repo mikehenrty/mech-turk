@@ -488,7 +488,12 @@ MechTurk.prototype._listAll = function(recordType, verifyType, NextToken) {
       let pending = hit.NumberOfAssignmentsPending;
       let available = hit.NumberOfAssignmentsAvailable;
       let completed = hit.NumberOfAssignmentsCompleted;
-      console.log(little(hit.HITId), type, hit.HITStatus,
+
+      let now = Date.now();
+      let then = +(new Date(hit.Expiration));
+      let expired = now - then > 0 ? 'Expired' : 'Fresh';
+
+      console.log(little(hit.HITId), type, hit.HITStatus, expired,
                   pending, 'pending',
                   available, 'available',
                   completed, 'completed');
@@ -541,7 +546,8 @@ MechTurk.prototype.add = function(count) {
         acc[val] = true;
         return acc;
       }, {})).forEach(url => {
-        console.log(url);
+        // TODO, only print once per group somehow.
+        // console.log(url);
       });
       console.log('new jobs created', count);
     });

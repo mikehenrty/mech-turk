@@ -16,9 +16,8 @@ var microphone;
 // from the server. See getSentences() and parseSentences().
 var sentences = [], directories = [];
 
-// The sentence we're currently recording, and its directory.
-// These are picked at random in recordingScreen.show()
-var currentSentence, currentDirectory;
+// The sentence we're currently recording.
+var currentSentence;
 
 // These are some things that can go wrong:
 var ERR_PREVIEW = 'Please click "Accept HIT" to record your voice.';
@@ -138,16 +137,12 @@ function getMicrophone() {
   });
 }
 
-// Fetch the sentences.json file that tell us what sentences
-// to ask the user to read
+// TODO: this doesn't need to be asyncrous anymore.
+// Grab the sentence from the query string.
 function getSentences() {
-  return fetch('./data/screenplaysfinal.txt').then(function(r) {
-    return r.text().then(function(text) {
-      sentences = text.split('\n').filter(function(s) {
-        return !!s;
-      });
-    });
-  });
+  var query = getQuery();
+  sentences = [query.sentence];
+  return Promise.resolve(sentences);
 }
 
 // If anything goes wrong in the app startup sequence, this function
@@ -219,12 +214,11 @@ function initializeAndRun() {
 
   // Here's how we switch to the recording screen
   function switchToRecordingScreen(needNewSentence) {
-    // Pick a random sentence if we don't have one or need a new one
+    // TODO: refactor, we dont need multiple sentences
+    // Assign the current sentence if we don't have one.
     if (needNewSentence || !currentSentence) {
-      var n = Math.floor(Math.random() * sentences.length);
-      currentSentence = sentences[n];
+      currentSentence = sentences[0];
       document.getElementById('excerpt').value = currentSentence;
-      currentDirectory = directories[n];
     }
 
     // Hide the playback screen (and release its audio) if it was displayed

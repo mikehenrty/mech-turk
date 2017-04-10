@@ -1,8 +1,12 @@
+const fs = require('fs');
+const path = require('path');
 const promisify = require('./promisify');
 
 const BASE_URL = 'https://mechturk.henretty.us/';
 const VERIFY_URL = BASE_URL + 'verify.html';
 const HIT_URL = "https://workersandbox.mturk.com/mturk/preview?groupId=";
+
+const SENTENCES_FILE = path.resolve(__dirname, 'screenplaysfinal.txt');
 
 const DEFAULT_OPTIONS = {
   LifetimeInSeconds: 3600,
@@ -117,14 +121,47 @@ Question.prototype._addWithType = function(type, o) {
     hit = hit.HIT;
     // Good debug output when creating many hits.
     // console.log('new hit created', hit.Title, hit.HITTypeId.substr(0, 4));
-    return HIT_URL + hit.HITTypeId;
+    var url = HIT_URL + hit.HITTypeId;
+    console.log(url);
+    return url;
   });
 };
 
-Question.prototype.add = function(options) {
-  return this._addWithType(HIT_RECORD, {
-    Question: this._getQuestionXMLTemplate()
+Question.prototype._getQuestionFile = function() {
+  return new Promise((resolve, reject) => {
+    fs.readFile(SENTENCES_FILE, 'utf8', (err, data) => {
+      if (err) {
+        console.error('read file error', SENTENCES_FILE, err);
+        reject(err);
+        return;
+      }
+
+      resolve(data);
+    });
   });
+};
+
+Question.prototype._getRandomQuestion = function() {
+  return this._getQuestionFile()
+    .then(lines => {
+      lines = lines.split('\n').filter(function(s) {
+        return !!s;
+      });
+
+      // Choose a random sentence from the lines.
+      var n = Math.floor(Math.random() * lines.length);
+      return lines[n];
+    });
+};
+
+Question.prototype.add = function() {
+  return this._getRandomQuestion()
+    .then(sentence => {
+      var url = BASE_URL + '?sentence=' + sentence;
+      return this._addWithType(HIT_RECORD, {
+        Question: this._getQuestionXMLTemplate(url)
+      });
+    });
 };
 
 // We expect HITId, AssignmentId, WorkerId, and excerpt in the info array.
