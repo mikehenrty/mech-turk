@@ -14,6 +14,8 @@ const APP_NAME = 'mechturk';
 
 gulp.task('npm-install', shell.task(['npm install']));
 
+gulp.task('clean', shell.task([`git clean -idx ${PATH_SERVER}`]));
+
 gulp.task('listen', () => {
   nodemon({
     script: 'server/server.js',
