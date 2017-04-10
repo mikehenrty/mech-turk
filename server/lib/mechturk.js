@@ -358,7 +358,11 @@ MechTurk.prototype._processHits = function(hits, recordType, verifyType) {
         });
       }
     });
-  }, hits);
+  }, hits)
+    .then(r => {
+      console.log('is it the same thing here2?', r);
+      return r;
+    });
 };
 
 MechTurk.prototype._approveAll = function(NextToken) {
