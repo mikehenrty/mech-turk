@@ -243,12 +243,8 @@ MechTurk.prototype._processVerify = function(assignments) {
     return this._glob(pattern)
 
     .then(files => {
-      if (!files || files.length === 0) {
-        console.log('unable to get files', pattern);
-        throw 'No uploaded files found';
-      }
-
       var destination;
+      files = files || [];
       if (answer.answer === 'yes') {
         destination = path.resolve(VERIFIED_PATH, answer.previousworkerid);
       } else if (answer.answer === 'no' || answer.answer === 'bad') {
@@ -263,8 +259,10 @@ MechTurk.prototype._processVerify = function(assignments) {
         return promisify(fs, fs.move, [f, p]);
       }, files)
 
-      .then(() => {
-        if (answer.answer === 'yes') {
+      .then(r => {
+        if (files.length === 0) {
+          console.log('voice clip no found, discarded', little(results.HITId));
+        } else if (answer.answer === 'yes') {
           console.log('voice clip accepted', little(results.HITId));
         } else {
           console.log('sound rejected', little(results.HITId));
@@ -360,15 +358,19 @@ MechTurk.prototype._processHits = function(hits, recordType, verifyType) {
       });
     }).call(this)
 
-    .then(results => {
+    .then(processed => {
+      if (processed < 1) {
+        return processed;
+      }
+
       if (HITTypeId === recordType) {
         return this._updatHITReviewStatus(HITId, false).then(t=> {
-          return results;
+          return processed;
         });
       } else if (HITTypeId === verifyType) {
         return this._finalizeVerify(HITId, hit.RequesterAnnotation)
           .then(t=> {
-            return results;
+            return processed;
           });
       }
     });
