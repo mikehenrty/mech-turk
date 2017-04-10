@@ -7,8 +7,9 @@ const promisify = require('./promisify');
 
 const CONFIG_FILE = __dirname + '/../../config.json';
 const UPLOAD_PATH = __dirname + '/../upload/';
-const VERIFIED_PATH = __dirname + '/../verified/';
-const REJECTED_PATH = __dirname + '/../rejected/';
+const RECORDED_PATH = path.resolve(UPLOAD_PATH, 'recorded');
+const VERIFIED_PATH = path.resolve(UPLOAD_PATH, 'verified');
+const REJECTED_PATH = path.resolve(UPLOAD_PATH, 'rejected');
 
 const ENDPOINT = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com';
 const REGEX_FREETEXT = '<FreeText>(.*?)<\/FreeText>';
@@ -238,7 +239,7 @@ MechTurk.prototype._processVerify = function(assignments) {
   return promisify.map(this, results => {
     var AssignmentId = results.id;
     var answer = results.answer;
-    var pattern = path.resolve(UPLOAD_PATH, answer.previousworkerid,
+    var pattern = path.resolve(RECORDED_PATH, answer.previousworkerid,
                                answer.previousassignmentid + '.*');
     return this._glob(pattern)
 
@@ -408,7 +409,6 @@ MechTurk.prototype.approve = function() {
 
 MechTurk.prototype.review = function() {
   return this._reviewAll().then(reviewed => {
-    console.log('reviewed', reviewed);
     if (reviewed < 1) {
       console.log('no reviewable jobs');
     }
