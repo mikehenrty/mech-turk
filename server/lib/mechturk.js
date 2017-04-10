@@ -531,7 +531,20 @@ MechTurk.prototype.add = function(count) {
   for (let i = 0; i < count; i++) {
     promises.push(this._question.add());
   }
-  return Promise.all(promises);
+  return Promise.all(promises)
+    .then(results => {
+
+      // Print nice output for adding all these jobs.
+      // Print any new group urls, and new job count.
+      let count = results.length;
+      Object.keys(results.reduce((acc, val) => {
+        acc[val] = true;
+        return acc;
+      }, {})).forEach(url => {
+        console.log(url);
+      });
+      console.log('new jobs created', count);
+    });
 };
 
 MechTurk.prototype.help = function() {

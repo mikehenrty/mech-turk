@@ -115,8 +115,9 @@ Question.prototype._addWithType = function(type, o) {
 
   .then(hit => {
     hit = hit.HIT;
-    console.log('new hit created', hit.Title, hit.HITTypeId.substr(0, 4));
-    console.log(HIT_URL + hit.HITTypeId);
+    // Good debug output when creating many hits.
+    // console.log('new hit created', hit.Title, hit.HITTypeId.substr(0, 4));
+    return HIT_URL + hit.HITTypeId;
   });
 };
 
