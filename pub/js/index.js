@@ -538,6 +538,8 @@ function RecordingScreen(element, microphone) {
       setMessage('please record sentenct first');
       return;
     }
+    empty(uploadButton);
+    uploadButton.appendChild(getSpinner());
     element.dispatchEvent(new CustomEvent('upload', {detail: this.recording}));
   }.bind(this));
 
