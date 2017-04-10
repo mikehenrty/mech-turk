@@ -184,6 +184,15 @@ button.active,
   display: inline-block;
 }
 
+#levels {
+  opacity: 0.2;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.recording #levels {
+  opacity: 1;
+}
+
 #elapsedtime {
   display: inline-block;
   width: 40px;

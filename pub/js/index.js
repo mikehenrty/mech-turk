@@ -457,8 +457,7 @@ function RecordingScreen(element, microphone) {
         var r = Math.round(100 + (ratio) * 255 * 2.5);
         var g = 24;
         var b = 24;
-        // TODO: figure out better way to show recording.
-        // fillStyle = `rgb(${r}, ${g}, ${b})`;
+        fillStyle = 'rgb(' + r + ', ' + g + ', ' + b + ')';
       }
 
       context.fillStyle = fillStyle;
