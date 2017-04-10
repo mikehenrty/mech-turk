@@ -1,15 +1,18 @@
+'use strict';
+
 var path = require('path');
-var static = require('node-static');
+var nodeStatic = require('node-static');
 var jsonfile = require('jsonfile');
 var fs = require('fs');
 var ff = require('ff');
 var ms = require('mediaserver');
+var metrics = require('./lib/metrics');
 
 const DEFAULT_PORT = 9000;
 const CONFIG_FILE = path.resolve(__dirname, '..', 'config.json');
 const UPLOAD_PATH = path.resolve(__dirname, 'upload', 'recorded');
 
-var fileServer = new static.Server('./pub', { cache: false });
+var fileServer = new nodeStatic.Server('./pub', { cache: false });
 
 function saveClip(request) {
   var info = request.headers;
@@ -77,7 +80,10 @@ jsonfile.readFile(CONFIG_FILE, function(err, config) {
     }
 
     request.addListener('end', function () {
-      fileServer.serve(request, response);
+      metrics.trackRequest(request, (err, results) => {
+        // Serve file no matter what happened to our tracking request.
+        fileServer.serve(request, response);
+      });
     }).resume();
   }).listen(port);
   console.log(`listening at http://localhost:${port}`);
