@@ -325,7 +325,7 @@ function RecordingScreen(element, microphone) {
     element.dispatchEvent(new CustomEvent('record', {
       detail: blob
     }));
-    chunks = []
+    chunks = [];
   };
 
   // Set up the analyzer node, and allocate an array for its data
