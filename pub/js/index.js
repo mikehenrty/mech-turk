@@ -43,6 +43,18 @@ function setMessage(message) {
   m.className = 'panel';
 }
 
+function getSpinner() {
+  var b = document.createElement('b');
+  b.className = 'progress small';
+  return b;
+}
+
+function empty(el) {
+  while (el.firstChild) {
+    el.removeChild(el.firstChild);
+  }
+}
+
 // This is the program startup sequence.
 checkPlatformSupport()
   .then(validatePage)
@@ -274,7 +286,7 @@ function RecordingScreen(element, microphone) {
   // After player ended, make sure to enable submission (again).
   this.player.addEventListener('ended', () => {
     $('#recordButton').textContent = 'Record';
-    $('#player').className = ''; // Remove disabled.
+    this.player.className = ''; // Remove disabled.
     $('#uploadButton').classList.add('active');
   });
 
@@ -398,9 +410,10 @@ function RecordingScreen(element, microphone) {
       // Without this argument to start(), Chrome will call dataavailable
       // very frequently.
       recorder.start(20000);
-      document.querySelector('#recordButton').textContent = 'Stop';
-      // TODO: replace this with text indicators.
-      //document.querySelector('#divanim').className = 'recording-indicator';
+      recordButton.textContent = 'Stop';
+      recordButton.appendChild(getSpinner());
+      $('#player').className = 'disabled';
+
       document.querySelector('#uploadButton').classList.remove('active');
       document.body.className = 'recording';
     }
@@ -413,9 +426,9 @@ function RecordingScreen(element, microphone) {
       recording = false;
       document.body.className = '';
       recordButton.className = 'disabled'; // disabled 'till after the beep
+      empty(recordButton);
+      recordButton.textContent = 'Playing';
       recorder.stop();
-      // TODO: replace this with text indicators.
-      // document.querySelector('#divanim').className = 'stopped-indicator';
     }
   }
 
@@ -521,8 +534,10 @@ function RecordingScreen(element, microphone) {
   });
 
   uploadButton.addEventListener('click', function() {
-    if (!canuploadandplay)
+    if (!canuploadandplay) {
+      setMessage('please record sentenct first');
       return;
+    }
     element.dispatchEvent(new CustomEvent('upload', {detail: this.recording}));
   }.bind(this));
 
