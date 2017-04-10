@@ -417,7 +417,9 @@ MechTurk.prototype.review = function() {
   return this._reviewAll().then(reviewed => {
     if (reviewed < 1) {
       console.log('no reviewable jobs');
+      return;
     }
+    console.log('reviewed jobs', reviewed);
   });
 };
 
