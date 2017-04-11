@@ -23,11 +23,11 @@
         return;
       }
 
+      // Track our request.
+      metrics.trackRequest(request);
+
       request.addListener('end', () => {
-        metrics.trackRequest(request, (err, results) => {
-          // Serve file no matter what happened to our tracking request.
-          fileServer.serve(request, response);
-        });
+        fileServer.serve(request, response);
       }).resume();
     }).listen(port);
     console.log(`listening at http://localhost:${port}`);

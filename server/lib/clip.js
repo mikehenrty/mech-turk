@@ -23,11 +23,10 @@
 
     handleRequest: function(request, response) {
       if (request.method === 'POST') {
+        metrics.trackSubmission(request);
         clip.save(request).then(timestamp => {
-          metrics.trackSubmission(request, () => {
-            response.writeHead(200);
-            response.end('' + timestamp);
-          });
+          response.writeHead(200);
+          response.end('' + timestamp);
         }).catch(e => {
           response.writeHead(500);
           console.error('saving clip error', e, e.stack);

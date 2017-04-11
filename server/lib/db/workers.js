@@ -36,6 +36,33 @@
       f.onComplete(cb);
     },
 
+    track: function(workerId, ip, agent) {
+      let db;
+
+      let f = ff(() => {
+        mongo.getDB(f());
+      },
+
+        _db => {
+          db = _db;
+          db.collection(WORKERS).updateOne(
+            { workerId: workerId },
+            {
+              $setOnInsert: {
+                workerId: workerId,
+                joined: new Date(),
+                submissions: 0,
+              },
+              $set: {
+                updated: new Date(),
+              },
+              $inc: { accessed: 1 },
+              $addToSet: { ips: ip, userAgents: agent },
+            },
+            { upsert: true });
+        });
+    },
+
     addSubmission: function(workerId, cb) {
       let f = ff(() => {
         mongo.getDB(f());
