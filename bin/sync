@@ -1,0 +1,45 @@
+#!/usr/bin/env node
+'use strict';
+
+/**
+ * Sync only code relevant files to the server using
+ *   the following variables from config.json:
+ * @uploadHost - Host to scp up to.
+ * @uploadDest - Destination directory for files (repo root).
+ */
+
+const gulp = require('gulp');
+const jsonfile = require('jsonfile');
+const rsync = require('gulp-rsync');
+
+const BASE_PATH = __dirname + '/../';
+const CONFIG_FILE = BASE_PATH + 'config.json';
+
+jsonfile.readFile(CONFIG_FILE, (err, config) => {
+  if (!config.uploadHost || !config.uploadDest) {
+    console.error('missing config properties', config);
+    process.exit(1);
+  }
+
+  let stream = gulp.src([
+    'pub/**', 'server/**', 'gulpfile.js', 'package.json', 'turk'
+  ]).pipe(rsync({
+    hostname: config.uploadHost,
+    destination: config.uploadDest,
+    verbose: true,
+    archive: true,
+    silent: false,
+    exclude: [ 'server/upload/**' ],
+  }));
+
+  stream.on('end', () => {
+    process.exit(0);
+  });
+
+  stream.on('error', err => {
+    console.error('sync error', err);
+    process.exit(1);
+  });
+
+  stream.resume();
+});
