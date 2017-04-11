@@ -1,14 +1,14 @@
-let $ = document.querySelector.bind(document);
-let SOUNDCLIP_URL = '/upload/';
+var $ = document.querySelector.bind(document);
+var SOUNDCLIP_URL = '/upload/';
 
 function getQuery() {
   if (window._query) {
     return window._query;
   }
-  let query = location.search.substr(1);
-  let result = {};
+  var query = location.search.substr(1);
+  var result = {};
   query.split("&").forEach(function(part) {
-    let item = part.split("=");
+    var item = part.split("=");
     result[item[0]] = decodeURIComponent(item[1]);
   });
   window._query = result;
@@ -16,7 +16,7 @@ function getQuery() {
 }
 
 function setMessage(message) {
-  let m = $('#message');
+  var m = $('#message');
   m.textContent = message;
   m.className = 'panel';
 }
@@ -51,38 +51,38 @@ function checkForm() {
     return false;
   }
 
-  let f = $('form');
+  var f = $('form');
   f.submit();
   return true;
 }
 
 function onLoad() {
-  let query = getQuery();
+  var query = getQuery();
 
   if (query.assignmentId === 'ASSIGNMENT_ID_NOT_AVAILABLE') {
     return;
   }
 
-  let clip = document.getElementById('clip');
+  var clip = document.getElementById('clip');
   clip.src = SOUNDCLIP_URL + query.previousworkerid + '/' +  query.verifyid;
-  clip.addEventListener('ended', () => {
+  clip.addEventListener('ended', function() {
     $('.answers').className = 'answers'; // Remove disabled.
   });
 
-  $('#original-excerpt').textContent = `"${query.excerpt}"`;
+  $('#original-excerpt').textContent = '"' + query.excerpt +'"';
   $('[name=previousworkerid]').value = query.previousworkerid;
   $('[name=previousassignmentid]').value = query.verifyid;
   $('[name=assignmentId]').value = query.assignmentId;
 
-  let m = $('#message');
+  var m = $('#message');
   m.className = 'panel disabled';
-  let o = $('#overlay');
+  var o = $('#overlay');
   o.className = 'disabled';
-  let s = $('#submit-btn');
+  var s = $('#submit-btn');
   s.addEventListener('click', checkForm);
 
-  let r = getRadios();
-  for (let i = 0; i < r.length; i++) {
+  var r = getRadios();
+  for (var i = 0; i < r.length; i++) {
     r[i].onclick = validateForm;
   }
 }

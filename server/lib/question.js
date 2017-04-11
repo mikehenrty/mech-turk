@@ -109,7 +109,7 @@ Question.prototype._getQuestionXMLTemplate = function(url, height) {
 };
 
 Question.prototype._addWithType = function(type, o) {
-  var options = Object.assign({}, DEFAULT_OPTIONS, o);
+  let options = Object.assign({}, DEFAULT_OPTIONS, o);
   return this._createHITType(type)
 
   .then(results => {
@@ -121,7 +121,7 @@ Question.prototype._addWithType = function(type, o) {
     hit = hit.HIT;
     // Good debug output when creating many hits.
     // console.log('new hit created', hit.Title, hit.HITTypeId.substr(0, 4));
-    var url = HIT_URL + hit.HITTypeId;
+    let url = HIT_URL + hit.HITTypeId;
     console.log(url);
     return url;
   });
@@ -149,7 +149,7 @@ Question.prototype._getRandomQuestion = function() {
       });
 
       // Choose a random sentence from the lines.
-      var n = Math.floor(Math.random() * lines.length);
+      let n = Math.floor(Math.random() * lines.length);
       return lines[n];
     });
 };
@@ -157,7 +157,7 @@ Question.prototype._getRandomQuestion = function() {
 Question.prototype.add = function() {
   return this._getRandomQuestion()
     .then(sentence => {
-      var url = BASE_URL + '?sentence=' + sentence;
+      let url = BASE_URL + '?sentence=' + sentence;
       return this._addWithType(HIT_RECORD, {
         Question: this._getQuestionXMLTemplate(url)
       });
@@ -166,7 +166,7 @@ Question.prototype.add = function() {
 
 // We expect HITId, AssignmentId, WorkerId, and excerpt in the info array.
 Question.prototype.addVerify = function(info) {
-  var url = VERIFY_URL + '?verifyid=' + info.AssignmentId +
+  let url = VERIFY_URL + '?verifyid=' + info.AssignmentId +
                           '&amp;previousworkerid=' + info.WorkerId +
                           '&amp;excerpt=' + encodeURIComponent(info.excerpt);
 
