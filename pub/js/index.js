@@ -274,15 +274,15 @@
 
     // After REPLAY_TIMEOUT, replay the recorded clip.
     this.player.addEventListener('canplaythrough', function() {
-      setTimeout(function() { this.player.play(); }, REPLAY_TIMEOUT);
-    });
+      setTimeout(function() { this.player.play(); }.bind(this),    REPLAY_TIMEOUT);
+    }.bind(this));
 
     // After player ended, make sure to enable submission (again).
     this.player.addEventListener('ended', function() {
       $('#recordButton').textContent = 'Record';
       this.player.className = ''; // Remove disabled.
       $('#uploadButton').classList.add('active');
-    });
+    }.bind(this));
 
     // A RecordingScreen object has methods for hiding and showing.
     // Everything else is private inside this constructor
@@ -290,12 +290,12 @@
       clockreset();
       this.element.querySelector('#sentence').textContent = '"' + sentence + '"';
       this.element.hidden = false;
-    };
+    }.bind(this);
 
     this.play = function(recording) {
       this.recording = recording;
       this.player.src = URL.createObjectURL(recording);
-    };
+    }.bind(this);
 
     this.discards = function() {
       document.querySelector('#playButton').style.color = "rgb(188,189,192)";
@@ -308,7 +308,7 @@
         this.player.src = "";
         this.player.load();
       }
-    };
+    }.bind(this);
 
 
     recorder.ondataavailable = function(e) {
@@ -342,7 +342,7 @@
       microphoneGain = parseFloat(this.value)/10;
       volumeNode.gain.value = microphoneGain;
       localStorage.microphoneGain = microphoneGain;
-    };
+    }.bind(this);
     sensitivity.value = microphoneGain * 10;
     volumeNode.gain.value = microphoneGain;
 
