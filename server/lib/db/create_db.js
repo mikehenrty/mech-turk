@@ -12,7 +12,12 @@
     });
 
     f.onComplete((err) => {
-      if (err) { console.error('could not create db', err); }
+      if (err) {
+        console.error('could not create db', err);
+      } else {
+        console.log('welp, looks like that worked.');
+      }
+
       mongo.disconnect();
       if (cb) { cb(); }
     });

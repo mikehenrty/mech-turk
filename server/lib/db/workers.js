@@ -7,6 +7,7 @@
   const mongo = require('./mongo');
 
   module.exports = {
+    /* Could be useful for later.
     get: function(workerId, ip, agent, cb) {
       let db;
 
@@ -35,6 +36,7 @@
 
       f.onComplete(cb);
     },
+    */
 
     track: function(workerId, ip, agent) {
       let db;
@@ -51,12 +53,14 @@
               $setOnInsert: {
                 workerId: workerId,
                 joined: new Date(),
-                submissions: 0,
+                accessVerify: 0,
+                submissionsRecord: 0,
+                submissionsVerify: 0,
               },
               $set: {
                 updated: new Date(),
               },
-              $inc: { accessed: 1 },
+              $inc: { accessRecord: 1 },
               $addToSet: { ips: ip, userAgents: agent },
             },
             { upsert: true });
@@ -71,7 +75,7 @@
         db => {
           db.collection(WORKERS).findOneAndUpdate(
             { workerId: workerId },
-            { $inc : { submissions: 1 } },
+            { $inc : { submissionsRecord: 1 } },
             { returnOriginal: false}, f());
         }).onComplete(cb);
     },
@@ -93,8 +97,11 @@
               { 'workerId': { '$type': 'string' } },
               { 'joined': { '$type': 'date' } },
               { 'updated': { '$type': 'date' } },
-              { 'accessed': { '$type': 'int' } },
-              { 'submissions': { '$type': 'int' } },
+
+              { 'accessRecord': { '$type': 'int' } },
+              { 'accessVerify': { '$type': 'int' } },
+              { 'submissionsRecord': { '$type': 'int' } },
+              { 'submissionsVerify': { '$type': 'int' } },
               // validate that ips is an array (workaround).
               // see: https://jira.mongodb.org/browse/server-23912
               { 'userAgents.0': { '$exists': true } },
@@ -106,7 +113,7 @@
 
         db => {
           db.collection(WORKERS).createIndex(
-            { workerid: 'text', userAgents: 1, ips: 1 },
+            { workerid: 'text' },
             { unique: true }, f.wait());
         });
 
