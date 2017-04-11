@@ -415,7 +415,7 @@
         }
         var ratio = (value - MIN_DB_LEVEL) / dbRange;
         var height = levels.height * ratio;
-        if (height < 0 ) {
+        if (height < 0) {
           continue;
         }
 
