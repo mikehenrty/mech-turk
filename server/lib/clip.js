@@ -11,7 +11,29 @@
 
   const ACCEPTED_EXT = [ 'ogg', 'webm', 'm4a' ];
 
-  module.exports = {
+  let clip = {
+
+    /**
+     * Is this request directed at voice clips?
+     */
+    isClipRequest: function(request) {
+      return request.url.includes('/upload/');
+    },
+
+    handleRequest: function(request, response) {
+      if (request.method === 'POST') {
+        clip.save(request).then(timestamp => {
+          response.writeHead(200);
+          response.end('' + timestamp);
+        }).catch(e => {
+          response.writeHead(500);
+          console.error('saving clip error', e, e.stack);
+          response.end('Error');
+        });
+      } else {
+        clip.serve(request, response);
+      }
+    },
 
     save: function(request) {
       let info = request.headers;
@@ -82,4 +104,6 @@
       });
     }
   };
+
+  module.exports = clip;
 })();

@@ -13,27 +13,17 @@
   let fileServer = new nodeStatic.Server('./pub', { cache: false });
 
 
-  jsonfile.readFile(CONFIG_FILE, function(err, config) {
+  jsonfile.readFile(CONFIG_FILE, (err, config) => {
     let port = config.port || DEFAULT_PORT;
-    require('http').createServer(function (request, response) {
-      if (request.url.includes('/upload/')) {
-        if (request.method === 'POST') {
-          clip.save(request).then(timestamp => {
-            response.writeHead(200);
-            response.end('' + timestamp);
-          }).catch(e => {
-            response.writeHead(500);
-            console.error('saving clip error', e, e.stack);
-            response.end('Error');
-          });
-        } else {
-          clip.serve(request, response);
-        }
+    require('http').createServer((request, response) => {
 
+      // Handle all clip related requests first.
+      if (clip.isClipRequest(request)) {
+        clip.handleRequest(request, response);
         return;
       }
 
-      request.addListener('end', function () {
+      request.addListener('end', () => {
         metrics.trackRequest(request, (err, results) => {
           // Serve file no matter what happened to our tracking request.
           fileServer.serve(request, response);
