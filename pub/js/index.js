@@ -561,7 +561,7 @@
 
         .then(function(response) {
           if (response.status !== 200) {
-            thow (ERR_UPLOAD_FAILED);
+            throw (ERR_UPLOAD_FAILED);
           }
           return response.text();
         });
