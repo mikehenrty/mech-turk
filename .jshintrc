@@ -9,7 +9,6 @@
   "nocomma": true,
   "node": true,
   "nonew": true,
-  "maxlen": 80,
   "predef": [ "console" ],
   "strict": true,
   "undef": true,
