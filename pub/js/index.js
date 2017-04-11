@@ -568,14 +568,12 @@
         method: 'POST',
         headers: headers,
         body: recording
-      })
-
-        .then(function(response) {
-          if (response.status !== 200) {
-            throw (ERR_UPLOAD_FAILED);
-          }
-          return response.text();
-        });
+      }).then(function(response) {
+        if (response.status !== 200) {
+          throw (ERR_UPLOAD_FAILED);
+        }
+        return response.text();
+      });
     }
 
     // When a recording is complete, pass it to the playback screen
