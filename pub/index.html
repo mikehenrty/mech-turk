@@ -12,19 +12,21 @@
       <div id="record-screen" class="screen disabled" hidden>
         <div id="error-screen" class="screen panel" hidden>
           <div class="panel-head">Error</div>
-          <p class="title" id="error-message"></p>
-          <p hidden id="error-reload">
-          <b>Reload the page to try again</b>
-          </p>
-          <p id="error-supported" hidden>
-          Please try one of these supported browsers:
-          <table>
-            <tr><th>Platform<th>Browser</tr>
-            <tr><td>Desktop<td>Firefox, Chrome</tr>
-            <tr><td>Android<td>Firefox</tr>
-            <tr><td>iPhone, iPad<td>Not supported</tr>
-          </table>
-          </p>
+          <div class="panel-content">
+            <p class="title" id="error-message"></p>
+            <p hidden id="error-reload">
+              Reload the page to try again
+            </p>
+            <p id="error-supported">
+              Please check your browser's compatibility:
+            </p>
+            <table>
+              <tr><th>Platform<th>Browser</tr>
+              <tr><td>Desktop<td>Firefox, Chrome</tr>
+              <tr><td>Android<td>Firefox</tr>
+              <tr><td>iPhone, iPad<td><b>Not supported</b></tr>
+            </table>
+          </div>
         </div>
 
         <div id="overview" class="panel">

@@ -24,6 +24,8 @@
   var currentSentence;
 
   // These are some things that can go wrong:
+  var ERR_NO_RECORDING = 'Please record first.';
+  var ERR_NO_PLAYBACK = 'Please listen before submitting.';
   var ERR_PREVIEW = 'Please click "Accept HIT" to record your voice.';
   var ERR_PLATFORM = 'Your browser does not support audio recording.';
   var ERR_NO_CONSENT = 'You did not consent to recording. ' +
@@ -222,6 +224,7 @@
     var playButton = element.querySelector('#playButton');
     var uploadButton = element.querySelector('#uploadButton');
     var canuploadandplay = false;
+    var playing = false;
 
     // How much we amplify the signal from the microphone.
     // If we've got a saved value, use that.
@@ -277,8 +280,13 @@
       setTimeout(function() { this.player.play(); }.bind(this),    REPLAY_TIMEOUT);
     }.bind(this));
 
+    this.player.addEventListener('play', function() {
+      playing = true;
+    }.bind(this));
+
     // After player ended, make sure to enable submission (again).
     this.player.addEventListener('ended', function() {
+      playing = false;
       $('#recordButton').textContent = 'Record';
       this.player.className = ''; // Remove disabled.
       $('#uploadButton').classList.add('active');
@@ -479,17 +487,20 @@
 
       if (recording) {
         stopRecording();
-      }
-      else {
+      } else {
         startRecording();
       }
     });
 
     uploadButton.addEventListener('click', function() {
       if (!canuploadandplay) {
-        setMessage('please record sentenct first');
+        setMessage(ERR_NO_RECORDING);
+        return;
+      } else if (playing) {
+        setMessage(ERR_NO_PLAYBACK);
         return;
       }
+
       empty(uploadButton);
       uploadButton.appendChild(getSpinner());
       element.dispatchEvent(new CustomEvent('upload', {detail: this.recording}));
