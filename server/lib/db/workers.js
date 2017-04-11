@@ -6,7 +6,7 @@
   const ff = require('ff');
   const mongo = require('./mongo');
 
-  module.exports = {
+  let workers = {
     /* Could be useful for later.
     get: function(workerId, ip, agent, cb) {
       let db;
@@ -38,8 +38,35 @@
     },
     */
 
-    track: function(workerId, ip, agent) {
+    track: function(type, workerId, ip, agent) {
       let db;
+
+      let setOnInsert = {
+        workerId: workerId,
+        joined: new Date(),
+        accessRecord: 0,
+        accessVerify: 0,
+        submissionsRecord: 0,
+        submissionsVerify: 0,
+      };
+
+      let inc = {
+        accessRecord: 1,
+        accessVerify: 1
+      };
+
+      // We can't have both access types in both setOnInsert
+      // and inc because mongo does not allow this.
+      if (type === 'record') {
+        delete setOnInsert.accessRecord;
+        delete inc.accessVerify;
+      } else if (type === 'verify') {
+        delete setOnInsert.accessVerify;
+        delete inc.accessRecord;
+      } else {
+        console.error('unrecognized tracking type', type);
+        throw 'no type';
+      }
 
       let f = ff(() => {
         mongo.getDB(f());
@@ -50,21 +77,23 @@
           db.collection(WORKERS).updateOne(
             { workerId: workerId },
             {
-              $setOnInsert: {
-                workerId: workerId,
-                joined: new Date(),
-                accessVerify: 0,
-                submissionsRecord: 0,
-                submissionsVerify: 0,
-              },
+              $setOnInsert: setOnInsert,
               $set: {
                 updated: new Date(),
               },
-              $inc: { accessRecord: 1 },
+              $inc: inc,
               $addToSet: { ips: ip, userAgents: agent },
             },
             { upsert: true });
         });
+    },
+
+    trackRecord: function(workerId, ip, agent) {
+      workers.track('record', workerId, ip, agent);
+    },
+
+    trackVerify: function(workerId, ip, agent) {
+      workers.track('verify', workerId, ip, agent);
     },
 
     addSubmission: function(workerId, cb) {
@@ -132,4 +161,6 @@
       f.onComplete(cb);
     },
   };
+
+  module.exports = workers;
 })();

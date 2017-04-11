@@ -96,7 +96,7 @@
         }
 
         if (!file) {
-          console.error('could not file clip', files);
+          console.error('could not find clip', files);
           return;
         }
 

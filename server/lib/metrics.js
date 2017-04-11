@@ -6,17 +6,22 @@
   module.exports = {
     trackRequest: function(request) {
       let parts = require('url').parse(request.url, true);
+      let workerId = parts.query.workerId;
 
       // For now, only track requests that have workerId in the query string.
-      if (!parts.query.workerId) {
+      if (!workerId) {
         return;
       }
 
-      let workerId = parts.query.workerId;
       let ip = request.connection.remoteAddress;
       let agent = request.headers['user-agent'];
+      let page = request.url.substring(1, request.url.indexOf('?'));
 
-      workers.track(workerId, ip, agent);
+      if (page === 'verify.html') {
+        workers.trackVerify(workerId, ip, agent);
+      } else {
+        workers.trackRecord(workerId, ip, agent);
+      }
     },
 
     trackSubmission: function(request) {
