@@ -20,6 +20,11 @@
       workers.get(workerId, ip, agent, (results) => {
         cb(null, results);
       });
+    },
+
+    trackSubmission: function(request, cb) {
+      let workerId = request.headers.uid;
+      workers.addSubmission(workerId, cb);
     }
   };
 })();

@@ -3,6 +3,7 @@
 
   const glob = require('glob');
   const ms = require('mediaserver');
+  const metrics = require('./metrics');
   const path = require('path');
   const ff = require('ff');
   const fs = require('fs');
@@ -23,8 +24,10 @@
     handleRequest: function(request, response) {
       if (request.method === 'POST') {
         clip.save(request).then(timestamp => {
-          response.writeHead(200);
-          response.end('' + timestamp);
+          metrics.trackSubmission(request, () => {
+            response.writeHead(200);
+            response.end('' + timestamp);
+          });
         }).catch(e => {
           response.writeHead(500);
           console.error('saving clip error', e, e.stack);
