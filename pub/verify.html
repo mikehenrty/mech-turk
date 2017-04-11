@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Verify</title>
-  <link rel="stylesheet" href="css/verify.css">
+  <link rel="stylesheet" href="css/shared.css">
 </head>
 <body>
   <div id="content">
@@ -14,13 +14,18 @@
         Help us verify that the sound clip matches the sentence.
       </div>
     </div>
-    <form class="panel" action="https://workersandbox.mturk.com/mturk/externalSubmit" method="POST">
+
+    <form class="panel"
+          action="https://workersandbox.mturk.com/mturk/externalSubmit"
+          method="POST">
       <div class="panel-head">Instructions</div>
+
       <div class="panel-content">
         <div class="left">
           <p id="original-excerpt"></p>
           <audio id="clip" controls="controls"></audio>
         </div>
+
         <div class="right">
           <ul class="answers disabled">
             <li>
@@ -46,6 +51,7 @@
       <button id="submit-btn" type="button">Submit</button>
     </form>
   </div>
+
   <div id="overlay"></div>
   <script src="js/verify.js"></script>
 </body>
