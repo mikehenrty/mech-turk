@@ -7,12 +7,13 @@
 
   const PATH_JS = __dirname + '/pub/js/';
   const PATH_SERVER = __dirname + '/server/';
+  const PATH_UPLOAD = __dirname + '/server/upload/';
   const CONFIG_FILE = __dirname + '/config.json';
   const APP_NAME = 'mechturk';
 
   gulp.task('npm-install', shell.task(['npm install']));
 
-  gulp.task('clean', shell.task([`git clean -idx ${PATH_SERVER}`]));
+  gulp.task('clean', shell.task([`git clean -idx ${PATH_UPLOAD}`]));
 
   gulp.task('sync', shell.task(['./bin/sync']));
 
