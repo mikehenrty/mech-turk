@@ -80,7 +80,6 @@
       glob(prefix + '.*', (err, files) => {
         if (err) {
           console.error('could not glob for clip', err);
-          reject(err);
           return;
         }
 
@@ -96,7 +95,6 @@
 
         if (!file) {
           console.error('could not file clip', files);
-          reject('no clip');
           return;
         }
 
