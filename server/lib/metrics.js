@@ -16,7 +16,8 @@
 
       let ip = request.connection.remoteAddress;
       let agent = request.headers['user-agent'];
-      let excerpt = parts.query.sentence;
+      // TODO: unify the query string parameter name.
+      let excerpt = parts.query.sentence || parts.query.excerpt;
       let assignmentId = parts.query.assignmentId;
       let path = parts.pathname;
 
@@ -25,7 +26,7 @@
         sentences.addVerify(excerpt, workerId, assignmentId);
       } else if (path === '/') {
         workers.trackRecord(workerId, ip, agent);
-        sentences.addVerify(excerpt, workerId, assignmentId);
+        sentences.addRecord(excerpt, workerId, assignmentId);
       } else {
         console.error('cannot track unrecognized path', path);
       }
