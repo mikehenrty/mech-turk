@@ -555,20 +555,15 @@
         recording = new Blob([recording], {type:'audio/webm;codecs=opus'});
       }
 
-      var headers = new Headers();
-      headers.append('uid', getQuery().workerId);
-      headers.append('sentence', currentSentence);
-      headers.append('assignmentid', getQuery().assignmentId);
-
-      return fetch(SOUNDCLIP_URL, {
-        method: 'POST',
-        headers: headers,
-        body: recording
-      }).then(function(response) {
-        if (response.status !== 200) {
-          throw (ERR_UPLOAD_FAILED);
-        }
-        return response.text();
+      return new Promise(function(resolve, reject) {
+        var query = getQuery();
+        var req = new XMLHttpRequest();
+        req.upload.addEventListener('load', resolve);
+        req.open('POST', SOUNDCLIP_URL);
+        req.setRequestHeader('uid', query.workerId);
+        req.setRequestHeader('sentence', currentSentence);
+        req.setRequestHeader('assignmentid', query.assignmentId);
+        req.send(recording);
       });
     }
 
