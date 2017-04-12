@@ -45,7 +45,10 @@
               </div>
             </div>
             <div id="sentence" class="title"></div>
-            <form id="container" action="https://workersandbox.mturk.com/mturk/externalSubmit" method="POST">
+            <form id="container"
+                  action="https://workersandbox.mturk.com/mturk/externalSubmit"
+                  method="POST">
+              <span id="record-progress" class="progress small"></span>
               <button id="recordButton" class="active" type="button">
                 Record
               </button>
@@ -62,15 +65,16 @@
               <button id="uploadButton" type="button">
                 Submit
               </button>
+              <span id="upload-progress" class="progress small"></span>
 
-              <input id="sensitivity" style="display: none" 
+              <input id="sensitivity" style="display: none"
                                       type="range" min="1" max="200"></input>
             </form>
           </div>
         </div>
       </div>
     </div>
-    <div id="overlay">
+    <div id="overlay"></div>
     <script defer src="./js/index.js"></script>
   </body>
 </html>

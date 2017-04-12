@@ -47,12 +47,6 @@
     m.className = 'panel';
   }
 
-  function getSpinner() {
-    var b = document.createElement('b');
-    b.className = 'progress small';
-    return b;
-  }
-
   function empty(el) {
     while (el.firstChild) {
       el.removeChild(el.firstChild);
@@ -155,6 +149,8 @@
   // If anything goes wrong in the app startup sequence, this function
   // is called to tell the user what went wrong
   function displayErrorMessage(error) {
+    $('#record-progress').className = '';
+    $('#upload-progress').className = '';
     var recordScreen = document.querySelector('#record-screen');
     recordScreen.classList.add('disabled');
     recordScreen.hidden = false;
@@ -368,8 +364,8 @@
         // very frequently.
         recorder.start(20000);
         recordButton.textContent = 'Stop';
-        recordButton.appendChild(getSpinner());
         $('#player').className = 'disabled';
+        $('#record-progress').className = 'progress small active';
 
         document.querySelector('#uploadButton').classList.remove('active');
         document.body.className = 'recording';
@@ -383,6 +379,7 @@
         recording = false;
         document.body.className = '';
         recordButton.className = 'disabled'; // disabled 'till after the beep
+        $('#record-progress').className = 'progress small';
         empty(recordButton);
         recordButton.textContent = 'Playing';
         recorder.stop();
@@ -501,8 +498,7 @@
         return;
       }
 
-      empty(uploadButton);
-      uploadButton.appendChild(getSpinner());
+      $('#upload-progress').className = 'progress small active';
       element.dispatchEvent(new CustomEvent('upload', {detail: this.recording}));
     }.bind(this));
 

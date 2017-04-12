@@ -240,14 +240,13 @@ button.active:active {
 
 #recordButton {
 }
-#recordButton .progress:before,
-#recordButton .progress:after,
-#recordButton .progress > div:before,
-#recordButton .progress > div:after {
-    border-radius: .2em;
+
+#record-progress.progress:before,
+#record-progress.progress:after,
+#record-progress.progress > div:before,
+#record-progress.progress > div:after {
     background: red;
     box-shadow: 0 3.5em red; /* container height - part height */
-    transform-origin: 50% 2.5em; /* container height / 2 */
   }
 
 
@@ -280,6 +279,7 @@ body.recording .recordButton::before {
 }
 
 .progress {
+  visibility: hidden;
   position: relative;
   display: inline-block;
   width: 5em;
@@ -289,6 +289,10 @@ body.recording .recordButton::before {
   text-indent: 999em;
   overflow: hidden;
   animation: spin 1s infinite steps(8);
+}
+
+.progress.active {
+  visibility: visible;
 }
 
 .small.progress {
