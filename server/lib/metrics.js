@@ -2,6 +2,7 @@
   'use strict';
 
   const workers = require('./db/workers');
+  const sentences = require('./db/sentences');
 
   module.exports = {
     trackRequest: function(request) {
@@ -15,12 +16,18 @@
 
       let ip = request.connection.remoteAddress;
       let agent = request.headers['user-agent'];
-      let page = request.url.substring(1, request.url.indexOf('?'));
+      let excerpt = parts.query.sentence;
+      let assignmentId = parts.query.assignmentId;
+      let path = parts.pathname;
 
-      if (page === 'verify.html') {
+      if (path === '/verify.html') {
         workers.trackVerify(workerId, ip, agent);
-      } else {
+        sentences.addVerify(excerpt, workerId, assignmentId);
+      } else if (path === '/') {
         workers.trackRecord(workerId, ip, agent);
+        sentences.addVerify(excerpt, workerId, assignmentId);
+      } else {
+        console.error('cannot track unrecognized path', path);
       }
     },
 
