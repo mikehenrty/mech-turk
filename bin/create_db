@@ -1,9 +1,12 @@
+#!/usr/bin/env node
 (function() {
   'use strict';
 
-  const mongo = require('./mongo');
-  const workers = require('./workers');
-  const sentences = require('./sentences');
+  const DB_PATH = __dirname + '/../server/lib/db/';
+
+  const mongo = require(DB_PATH + 'mongo');
+  const workers = require(DB_PATH + 'workers');
+  const sentences = require(DB_PATH + 'sentences');
 
   let ff = require('ff');
 
@@ -25,12 +28,7 @@
     });
   }
 
-  // If this was run from cli, immediately invoke run.
-  if (require.main === module) {
-    run(() => {
-      process.exit(0);
-    });
-  } else {
-    module.exports = run;
-  }
+  run(() => {
+    process.exit(0);
+  });
 })();
