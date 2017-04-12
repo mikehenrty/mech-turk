@@ -25,6 +25,7 @@
 
   const COMMANDS = {
     'help'   : 'Display this help text.',
+    'balance': 'Retrieves balance that is on the account.',
     'list'   : 'List the current HITs and their status.',
     'stats'  : 'List the status of the current uploaded clips.',
     'add'    : 'Add a new voice recording HIT.',
@@ -67,6 +68,10 @@
 
   MechTurk.prototype._deleteHIT = function(HITId) {
     return promisify(this._mt, this._mt.deleteHIT, { HITId: HITId });
+  };
+
+  MechTurk.prototype._getAccountBalance = function() {
+    return promisify(this._mt, this._mt.getAccountBalance, {});
   };
 
 
@@ -601,6 +606,12 @@
         resolve();
       });
 
+    });
+  };
+
+  MechTurk.prototype.balance = function() {
+    return this._getAccountBalance().then(results => {
+      console.log('you have:', results.AvailableBalance);
     });
   };
 
