@@ -6,6 +6,7 @@
 
   const BASE_URL = 'https://mechturk.henretty.us/';
   const VERIFY_URL = BASE_URL + 'verify.html';
+  // TODO: figure out production version of this.
   const HIT_URL = "https://workersandbox.mturk.com/mturk/preview?groupId=";
 
   const SENTENCES_FILE = path.resolve(__dirname, 'screenplaysfinal.txt');
@@ -16,8 +17,8 @@
   };
 
   const HIT_RECORD = {
-    Title: 'VoiceBank',
-    Description: 'Read English sentences out loud.',
+    Title: 'Read one English sentence out loud',
+    Description: 'As simple as reading the sentence(s). - Voice',
     AssignmentDurationInSeconds: 600,
     Reward:'0.01',
     QualificationRequirements:[{
@@ -28,8 +29,8 @@
   };
 
   const HIT_VERIFY = {
-    Title: 'VoiceBank - Verify',
-    Description: 'Verify spoken words.',
+    Title: 'Listen to a spoken sentence, and verify the words',
+    Description: 'Verify spoken words. - Voice',
     AssignmentDurationInSeconds: 600,
     Reward:'0.01',
     QualificationRequirements:[{
