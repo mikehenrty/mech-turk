@@ -489,7 +489,7 @@
     // The button responds to clicks to start and stop recording
     recordButton.addEventListener('click', function() {
       // Don't respond if we're disabled
-      if (recordButton.className === 'disabled') {
+      if (playing || recordButton.className === 'disabled') {
         return;
       }
 
