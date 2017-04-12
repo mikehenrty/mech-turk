@@ -17,7 +17,14 @@
   const REJECTED_DIR = 'rejected';
   const REJECTED_PATH = path.resolve(UPLOAD_PATH, REJECTED_DIR);
 
-  const ENDPOINT = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com';
+  const ENDPOINT =
+    // 'https://mturk-requester.us-east-1.amazonaws.com';
+    'https://mturk-requester-sandbox.us-east-1.amazonaws.com';
+
+    //  Alternative endpoint, couldn't get to work
+    // 'https://mechanicalturk.sandbox.amazonaws.com';
+    // 'https://mechanicalturk.amazonaws.com';
+
   const REGEX_FREETEXT = '<FreeText>(.*?)<\/FreeText>';
   const REGEX_QUESTION = '<QuestionIdentifier>(.*?)<\/QuestionIdentifier>';
 
