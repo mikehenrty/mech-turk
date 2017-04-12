@@ -1,8 +1,12 @@
 #!/usr/bin/env node
-'use strict';
-let mechturk = require('../server/lib/mechturk.js');
-let command = process.argv[2];
-let promise = mechturk.runCommand(command, process.argv[3])
-promise.catch(e => {
-  console.error('Error!', e);
+require('../config.js')(config => {
+  'use strict';
+  let Mechturk = require('../server/lib/mechturk.js');
+  let mt = new Mechturk(config.PROD);
+  let command = process.argv[2];
+  return;
+  me.runCommand(command, process.argv[3])
+    .catch(e => {
+      console.error('Turk Error:', e);
+    });
 });
