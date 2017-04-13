@@ -22,7 +22,7 @@ jsonfile.readFile(CONFIG_FILE, (err, config) => {
   }
 
   let stream = gulp.src([
-    'pub/**', 'server/**', 'gulpfile.js', 'package.json', 'turk'
+    'pub/**', 'server/**', 'bin/**', 'gulpfile.js', 'package.json', 'config.js'
   ]).pipe(rsync({
     hostname: config.uploadHost,
     destination: config.uploadDest,
