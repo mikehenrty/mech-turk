@@ -48,13 +48,6 @@
     gulp.watch('package.json', ['npm-install']);
   });
 
-  gulp.task('turk', () => {
-    let mechturk = require('./server/lib/mechturk.js');
-    // trim unwanted dashes '--'.
-    let command = process.argv[3] && process.argv[3].substr(2);
-    return mechturk.runCommand(command, process.argv[4]);
-  });
-
   gulp.task('deploy', ['npm-install', 'lint'], (done) => {
     let pm2 = require('pm2');
     let ff = require('ff');
