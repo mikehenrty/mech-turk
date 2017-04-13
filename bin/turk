@@ -4,8 +4,7 @@ require('../config.js')(config => {
   let Mechturk = require('../server/lib/mechturk.js');
   let mt = new Mechturk(config.PROD);
   let command = process.argv[2];
-  return;
-  me.runCommand(command, process.argv[3])
+  mt.runCommand(command, process.argv[3])
     .catch(e => {
       console.error('Turk Error:', e);
     });
