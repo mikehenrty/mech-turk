@@ -45,6 +45,8 @@
     'This may be a temporary problem. Please try again.';
 
   var SOUNDCLIP_URL = '/upload/';
+  var PROD_URL = 'https://www.mturk.com';
+  var PROD_ACTION = PROD_URL + '/mturk/externalSubmit';
 
   var $ = document.querySelector.bind(document);
 
@@ -106,6 +108,10 @@
     var query = getQuery();
     if (query.assignmentId === 'ASSIGNMENT_ID_NOT_AVAILABLE') {
       return Promise.reject(ERR_PREVIEW);
+    }
+
+    if (query.turkSubmitTo === PROD_URL) {
+      $('form').action = PROD_ACTION;
     }
 
     // Load forms with required assignmentId field.

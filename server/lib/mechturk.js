@@ -17,10 +17,10 @@
   const REJECTED_DIR = 'rejected';
   const REJECTED_PATH = path.resolve(UPLOAD_PATH, REJECTED_DIR);
 
-  const ENDPOINT =
-    // 'https://mturk-requester.us-east-1.amazonaws.com';
+  const ENDPOINT_PROD =
+    'https://mturk-requester.us-east-1.amazonaws.com';
+  const ENDPOINT_DEBUG =
     'https://mturk-requester-sandbox.us-east-1.amazonaws.com';
-
     //  Alternative endpoint, couldn't get to work
     // 'https://mechanicalturk.sandbox.amazonaws.com';
     // 'https://mechanicalturk.amazonaws.com';
@@ -63,9 +63,20 @@
     return str.substr(0, 4) + str.substr(-4);
   }
 
-  function MechTurk() {
+  /**
+   * MechTurk, class for handling aws mt api.
+   * @production - bool, use production entpoint.
+   */
+  function MechTurk(production) {
     AWS.config.loadFromPath(CONFIG_FILE);
-    this._mt = new AWS.MTurk({ endpoint: ENDPOINT });
+
+    // Make sure to use appropriate endpoint.
+    let endpoint = ENDPOINT_DEBUG;
+    if (production) {
+      endpoint = ENDPOINT_PROD;
+    }
+
+    this._mt = new AWS.MTurk({ endpoint: endpoint });
     this._question = new Question(this._mt);
   }
 
@@ -634,6 +645,7 @@
       return Promise.reject('unrec command:' + command);
     }
 
+
     /*
     // Debug output for funning server commands.
     // Runs prints list before and after command.
@@ -649,5 +661,5 @@
     return this[command](parameter);
   };
 
-  module.exports = new MechTurk();
+  module.exports = MechTurk;
 })();
