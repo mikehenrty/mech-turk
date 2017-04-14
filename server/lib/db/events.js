@@ -8,7 +8,7 @@
 
   let events = {
 
-    track: function(type, value) {
+    track: function(type, location, value) {
       let db;
       let f = ff(() => {
         mongo.getDB(f());
@@ -18,6 +18,7 @@
           db = _db;
           db.collection(EVENTS).insert({
             type: type,
+            location: location,
             value: value,
             timestamp: new Date()
           });
@@ -39,6 +40,7 @@
             collMod: EVENTS,
             'validator': { '$and': [
               { 'type': { '$type': 'string' } },
+              // { 'location': { '$type': 'string' } }, No validation
               { 'value': { '$type': 'string' } },
               { 'timestamp': { '$type': 'date' } },
             ]}

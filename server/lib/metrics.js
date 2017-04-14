@@ -7,7 +7,11 @@
 
   const ID_NOT_AVAILABLE = 'ASSIGNMENT_ID_NOT_AVAILABLE';
 
-  module.exports = {
+  let metrics = {
+    isEventRequest: function(request) {
+      return request.url.includes('/event/');
+    },
+
     trackRequest: function(request) {
       let parts = require('url').parse(request.url, true);
       let path = parts.pathname;
@@ -19,7 +23,7 @@
       let ip = request.connection.remoteAddress;
       let agent = request.headers['user-agent'];
 
-      // Only track requests that come from our main pages (not css, js, etc.)
+      // Only track non-event requests to our main pages (ie. not css js etc.)
       if (!query.assignmentId) {
         return;
       }
@@ -27,8 +31,8 @@
       // If we are previewing a HIT, the only thing we need to track is
       // the fact that we accessed the preview page for record and verify.
       if (query.assignmentId === ID_NOT_AVAILABLE) {
-        let type = 'preview' + (path === '/' ? 'record' : 'verify');
-        events.track(type, query.sentence);
+        let type = 'preview' + (path === '/' ? 'Record' : 'Verify');
+        events.track(type, path, query.sentence);
         return;
       }
 
@@ -46,6 +50,23 @@
     trackSubmission: function(request) {
       let workerId = request.headers.uid;
       workers.addSubmission(workerId);
+    },
+
+    handleRequest: function(request, response) {
+      let parts = require('url').parse(request.url, true);
+      let type = parts.pathname.split('/').pop();
+      let location = request.headers.url.split('?').shift();
+      let body = '';
+      request.on('data', data => {
+        body += data;
+      });
+      request.on('end', () => {
+        events.track(type, location, body);
+        response.writeHead(200);
+        response.end();
+      });
     }
   };
+
+  module.exports = metrics;
 })();

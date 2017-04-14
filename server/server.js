@@ -12,6 +12,13 @@
 
   let fileServer = new nodeStatic.Server('./pub', { cache: false });
 
+  function handleStaticRequest(request, response) {
+    // Track our request static request
+    metrics.trackRequest(request);
+    request.addListener('end', () => {
+      fileServer.serve(request, response);
+    }).resume();
+  }
 
   jsonfile.readFile(CONFIG_FILE, (err, config) => {
     let port = config.port || DEFAULT_PORT;
@@ -23,12 +30,14 @@
         return;
       }
 
-      // Track our request.
-      metrics.trackRequest(request);
+      // If it's a metrics only request, respond with 200 always.
+      if (metrics.isEventRequest(request)) {
+        metrics.handleRequest(request, response);
+        return;
+      }
 
-      request.addListener('end', () => {
-        fileServer.serve(request, response);
-      }).resume();
+      // If we get here, feed request to static parser.
+      handleStaticRequest(request, response);
     }).listen(port);
     console.log(`listening at http://localhost:${port}`);
   });

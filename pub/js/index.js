@@ -62,21 +62,6 @@
     }
   }
 
-  // This is the program startup sequence.
-  function getQuery() {
-    if (window._query) {
-      return window._query;
-    }
-    var query = location.search.substr(1);
-    var result = {};
-    query.split("&").forEach(function(part) {
-      var item = part.split("=");
-      result[item[0]] = decodeURIComponent(item[1]);
-    });
-    window._query = result;
-    return result;
-  }
-
   function checkPlatformSupport() {
     function isWebAudioSupported() {
       return typeof window.AudioContext === 'function';
@@ -612,7 +597,6 @@
 
   // The RecordingScreen object has show() and hide() methods and fires
   // a 'record' event on its DOM element when a recording has been made.
-
   checkPlatformSupport()
     .then(validatePage)
     .then(function() {
