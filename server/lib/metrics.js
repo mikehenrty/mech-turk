@@ -28,7 +28,7 @@
       // the fact that we accessed the preview page for record and verify.
       if (query.assignmentId === ID_NOT_AVAILABLE) {
         let type = 'preview' + (path === '/' ? 'record' : 'verify');
-        events.track(type, query.hitId);
+        events.track(type, query.sentence);
         return;
       }
 
