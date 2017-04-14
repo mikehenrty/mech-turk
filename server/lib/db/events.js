@@ -40,8 +40,8 @@
             collMod: EVENTS,
             'validator': { '$and': [
               { 'type': { '$type': 'string' } },
-              // { 'location': { '$type': 'string' } }, No validation
-              { 'value': { '$type': 'string' } },
+              { 'location': { '$type': 'string' } },
+              // { 'value': { '$type': 'string' } }, No validation.
               { 'timestamp': { '$type': 'date' } },
             ]}
           }, f.wait());
