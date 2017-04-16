@@ -240,6 +240,12 @@ button.active:active {
 }
 
 #recordButton {
+  background-color: #cd0000;
+  color: white;
+}
+
+#uploadButton.active {
+  background-color: #18c618;
 }
 
 #record-progress.progress:before,
