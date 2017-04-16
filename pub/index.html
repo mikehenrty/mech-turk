@@ -10,7 +10,7 @@
   <body>
     <div id="content">
       <p id="message" class="panel">
-        <noscript>You must enable Javascript to use this HIT</noscript>
+        <noscript>You must enable Javascript to complete this HIT</noscript>
       </p>
       <div id="record-screen" class="screen disabled" hidden>
         <div id="error-screen" class="screen panel" hidden>
@@ -35,7 +35,11 @@
         <div id="overview" class="panel">
           <div class="panel-head">Overview</div>
           <div class="panel-content">
-            Record this sentence with your voice.
+            <p>Hi there. I am collecting spoken sentences to train a general
+            purpose, open-source voice recognition engine. Please use
+            the interface below to record your voice and contribute.
+            Each HIT should only take a couple of seconds to complete.</p>
+            <p>I'm new here, so if you have any questions, comments, or advice, don't hesitate to send a message to:<br /><b>mikey (at) mozilla.com</b></p>
           </div>
         </div>
 
@@ -47,6 +51,17 @@
                 Please grant microphone access
               </div>
             </div>
+            <ol>
+              <li>Read over the sentence in quotes below.</li>
+              <li>When you are aready, press the Record button.</li>
+              <li>Speak the sentence clearly.</li>
+              <li>After you finish the sentence, push the Stop button.</li>
+              <li>The recording will play, make sure you can hear youself.</li>
+              <li>If you would like to re-record it, go back to step 2.</li>
+              <li>Once you are satisfied, click Submit.</li>
+              <li>I will review within a day.</li>
+              <li>Thank you!</li>
+            </ol>
             <div id="sentence" class="title"></div>
             <form id="container"
                   action="https://www.mturk.com/mturk/externalSubmit"

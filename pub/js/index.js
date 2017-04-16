@@ -551,7 +551,7 @@
       // Hide the playback screen (and release its audio) if it was displayed
       // Show the recording screen
       document.querySelector('#title').textContent =
-        'Press record and Read out loud:';
+        'How to record your voice:';
       recordingScreen.show(currentSentence);
     }
 
