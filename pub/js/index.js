@@ -45,8 +45,13 @@
     'This may be a temporary problem. Please try again.';
 
   var SOUNDCLIP_URL = '/upload/';
+  var SANDBOX_URL = 'https://workersandbox.mturk.com';
+  var SANDBOX_ACTION = SANDBOX_URL + '/mturk/externalSubmit';
+
+  /* Uneeded for now, but these are good to know
   var PROD_URL = 'https://www.mturk.com';
   var PROD_ACTION = PROD_URL + '/mturk/externalSubmit';
+  */
 
   var $ = document.querySelector.bind(document);
 
@@ -95,8 +100,8 @@
       return Promise.reject(ERR_PREVIEW);
     }
 
-    if (query.turkSubmitTo === PROD_URL) {
-      $('form').action = PROD_ACTION;
+    if (query.turkSubmitTo === SANDBOX_URL) {
+      $('form').action = SANDBOX_ACTION;
     }
 
     // Load forms with required assignmentId field.

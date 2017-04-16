@@ -1,6 +1,9 @@
 var $ = document.querySelector.bind(document);
 var SOUNDCLIP_URL = '/upload/';
 
+var SANDBOX_URL = 'https://workersandbox.mturk.com';
+var SANDBOX_ACTION = SANDBOX_URL + '/mturk/externalSubmit';
+
 function getQuery() {
   if (window._query) {
     return window._query;
@@ -58,6 +61,11 @@ function checkForm() {
 
 function onLoad() {
   var query = getQuery();
+
+  // Use sandbox form action in sandbox mode.
+  if (query.turkSubmitTo === SANDBOX_URL) {
+    $('form').action = SANDBOX_ACTION;
+  }
 
   if (query.assignmentId === 'ASSIGNMENT_ID_NOT_AVAILABLE') {
     return;
