@@ -482,7 +482,15 @@
         next = hits.NextToken;
 
         return promisify.map(this, hit => {
-          if (hit.HITStatus !== 'Reviewable') {
+          // Don't delete hits with Reviewing status.
+          if (hit.HITStatus === 'Reviewing') {
+            return;
+          }
+
+          // Make sure HIT we are deleting has all it's submitted
+          // asssigments already reviewed.
+          if (hit.NumberOfAssignmentsCompleted +
+              hit.NumberOfAssignmentsAvailable !== hit.MaxAssignments) {
             return;
           }
 
