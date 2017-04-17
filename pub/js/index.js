@@ -22,11 +22,6 @@
   // The microphone stream we get from getUserMedia
   var microphone;
 
-  // The sentences we want the user to read and their corresponding
-  // server-side directories that we upload them to.  We fetch these
-  // from the server. See getSentences() and parseSentences().
-  var sentences = [], directories = [];
-
   // The sentence we're currently recording.
   var currentSentence;
 
@@ -94,12 +89,24 @@
     }
   }
 
-  function validatePage() {
+  function setupPage() {
+    setMessage('Loading...');
+    $('#record-screen').hidden = false;
+
     var query = getQuery();
+
+    // Fill in the sence from the query string.
+    currentSentence = query.sentence;
+    $('#sentence').textContent = '"' + currentSentence + '"';
+    $('#excerpt').value = currentSentence;
+
+    // If this is just preview mode, we can bail out now without
+    // setting the page up an further.
     if (query.assignmentId === 'ASSIGNMENT_ID_NOT_AVAILABLE') {
       return Promise.reject(ERR_PREVIEW);
     }
 
+    // Make sure the form posts to the right url (dev or prod).
     if (query.turkSubmitTo === SANDBOX_URL) {
       $('form').action = SANDBOX_ACTION;
     }
@@ -139,14 +146,6 @@
         reject(ERR_PLATFORM);  // Browser does not support getUserMedia
       }
     });
-  }
-
-  // TODO: this doesn't need to be asyncrous anymore.
-  // Grab the sentence from the query string.
-  function getSentences() {
-    var query = getQuery();
-    sentences = [query.sentence];
-    return Promise.resolve(sentences);
   }
 
   // If anything goes wrong in the app startup sequence, this function
@@ -297,9 +296,8 @@
 
     // A RecordingScreen object has methods for hiding and showing.
     // Everything else is private inside this constructor
-    this.show = function(sentence) {
+    this.show = function() {
       clockreset();
-      this.element.querySelector('#sentence').textContent = '"' + sentence + '"';
       this.element.hidden = false;
     }.bind(this);
 
@@ -307,20 +305,6 @@
       this.recording = recording;
       this.player.src = URL.createObjectURL(recording);
     }.bind(this);
-
-    this.discards = function() {
-      document.querySelector('#playButton').style.color = "rgb(188,189,192)";
-      document.querySelector('#uploadButton').style.color = "rgb(188,189,192)";
-
-      canuploadandplay = false;
-      this.recording = null;
-      if (this.player.src) {
-        URL.revokeObjectURL(this.player.src);
-        this.player.src = "";
-        this.player.load();
-      }
-    }.bind(this);
-
 
     recorder.ondataavailable = function(e) {
       chunks.push(e.data);
@@ -539,22 +523,6 @@
     // Then set up event handlers to coordinate the two screens
     var recordingScreen = new RecordingScreen(recordingScreenElement, microphone);
 
-    // Here's how we switch to the recording screen
-    function switchToRecordingScreen(needNewSentence) {
-      // TODO: refactor, we dont need multiple sentences
-      // Assign the current sentence if we don't have one.
-      if (needNewSentence || !currentSentence) {
-        currentSentence = sentences[0];
-        document.getElementById('excerpt').value = currentSentence;
-      }
-
-      // Hide the playback screen (and release its audio) if it was displayed
-      // Show the recording screen
-      document.querySelector('#title').textContent =
-        'How to record your voice:';
-      recordingScreen.show(currentSentence);
-    }
-
     // Upload a recording using the fetch API to do an HTTP POST
     function upload(recording) {
       if (!recording.type) {
@@ -590,26 +558,16 @@
       });
     });
 
-    // If the user clicks 'Discard', switch back to the recording screen
-    // for another take of the same sentence
-    recordingScreenElement.addEventListener('discard', function() {
-      switchToRecordingScreen(false);
-    });
-
-    // Finally, we start the app off by displaying the recording screen
-    switchToRecordingScreen(true);
+    // Finally, start the app by showing the recording screen
+    $('#title').textContent = 'How to record your voice:';
+    recordingScreen.show();
   }
 
   // The RecordingScreen object has show() and hide() methods and fires
   // a 'record' event on its DOM element when a recording has been made.
   checkPlatformSupport()
-    .then(validatePage)
-    .then(function() {
-      setMessage('Loading...');
-      var rec = document.getElementById('record-screen');
-      rec.hidden = false;
-      return Promise.all([getMicrophone(), getSentences()])
-        .then(initializeAndRun);
-    })
+    .then(setupPage)
+    .then(getMicrophone)
+    .then(initializeAndRun)
     .catch(displayErrorMessage);
 })();
