@@ -39,6 +39,7 @@
     'review' : 'Review current HITs',
     'approve': 'Approve HITs.',
     'reset'  : 'Reset reviewing status back to available.',
+    'expire' : 'Forcibly expire all available HITs.',
     'trim'   : 'Delete all deletable jobs.'
   };
 
@@ -430,6 +431,19 @@
       });
   };
 
+  MechTurk.prototype.expire = function() {
+    let count = 0;
+    return this._runOnAllHits(hit => {
+      return this._expireHIT(hit.HITId)
+        .then(results => {
+          ++count;
+          return results;
+        });
+    }).then(() => {
+      console.log(`expired ${count} HITs`);
+    });
+  };
+
   MechTurk.prototype.approve = function() {
     return this._approveAll()
       .then(approved => {
@@ -458,7 +472,6 @@
       console.log(`reset ${count} out of ${results} HITs`);
     });
   };
-
 
   MechTurk.prototype._deleteReviewable = function(NextToken) {
     let deleted = 0;
