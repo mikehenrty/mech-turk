@@ -9,7 +9,7 @@
 
   let metrics = {
     isEventRequest: function(request) {
-      return request.url.includes('/event/');
+      return request.method === 'POST' && request.url.includes('/event/');
     },
 
     trackRequest: function(request) {
