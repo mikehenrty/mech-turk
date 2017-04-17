@@ -4,6 +4,11 @@ var SOUNDCLIP_URL = '/upload/';
 var SANDBOX_URL = 'https://workersandbox.mturk.com';
 var SANDBOX_ACTION = SANDBOX_URL + '/mturk/externalSubmit';
 
+var MSG_LISTEN = 'Please listen to the clip before submitting';
+var MSG_CHECKED = 'Please select an option to submit';
+
+var played = false;
+
 function getQuery() {
   if (window._query) {
     return window._query;
@@ -24,38 +29,28 @@ function setMessage(message) {
   m.className = 'panel';
 }
 
-function getRadios() {
-  return document.querySelectorAll('input[type="radio"]');
+function clipWasPlayed() {
+  return played;
 }
 
-function getCheckedRadios() {
-  return document.querySelectorAll('input[type="radio"]:checked');
-}
-
-function isFormReady() {
-  return getCheckedRadios().length > 0;
+function isFormReadyToSubmit() {
+  return document.querySelectorAll('input[type="radio"]:checked').length > 0;
 }
 
 function validateForm() {
-  if (isFormReady()) {
-    $('#submit-btn').className = 'active';
-    return true;
+  if (!clipWasPlayed()) {
+    setMessage(MSG_LISTEN);
+    $('#clip').className = 'highlight';
+    return false;
   }
 
-  $('#submit-btn').className = '';
-  return false;
-}
-
-
-function checkForm() {
-  if (!validateForm()) {
-    setMessage('Must listen and select a value to submit.');
+  if (!isFormReadyToSubmit()) {
+    setMessage(MSG_CHECKED);
     $('.answers').className = 'answers highlight';
     return false;
   }
 
-  var f = $('form');
-  f.submit();
+  $('#submit-btn').className = 'active';
   return true;
 }
 
@@ -74,6 +69,7 @@ function onLoad() {
   var clip = document.getElementById('clip');
   clip.src = SOUNDCLIP_URL + query.previousworkerid + '/' +  query.verifyid;
   clip.addEventListener('ended', function() {
+    played = true;
     $('.answers').className = 'answers'; // Remove disabled.
   });
 
@@ -86,13 +82,25 @@ function onLoad() {
   m.className = 'panel disabled';
   var o = $('#overlay');
   o.className = 'disabled';
-  var s = $('#submit-btn');
-  s.addEventListener('click', checkForm);
 
-  var r = getRadios();
+  // Update form after each radio button click.
+  var r = document.querySelectorAll('input[type="radio"]');
   for (var i = 0; i < r.length; i++) {
     r[i].onclick = validateForm;
   }
+
+  // Validate form before allowing submit.
+  var s = $('#submit-btn');
+  s.addEventListener('click', function() {
+    if (!validateForm()) {
+      return false;
+    }
+
+    var f = $('form');
+    f.submit();
+    return true;
+  });
+
 }
 
 document.addEventListener('DOMContentLoaded', onLoad);

@@ -131,6 +131,10 @@ hr {
   width: 100%;
 }
 
+#clip.highlight {
+  border: 7px solid red;
+}
+
 #sentence,
 #original-excerpt {
   font-size: 1.7em;
