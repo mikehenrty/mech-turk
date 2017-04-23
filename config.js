@@ -5,6 +5,8 @@
     "accessKeyId": "",     // AWS creds.
     "secretAccessKey": "", // AWS creds.
     "region": "us-east-1",
+    "port": 0,
+    "logfile": "",
     "uploadHost": "", // Server where site lives.
     "uploadDest": "/home/mikehenrty/mech-turk/",
     "DB_USER": "", // Mongo instance.
