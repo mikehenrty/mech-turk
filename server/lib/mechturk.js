@@ -260,6 +260,7 @@
   };
 
   MechTurk.prototype._processVerify = function(assignments) {
+    // Extract the answers from the submitted jobs.
     let answers = assignments.map(assignment => {
       return {
         HITId: assignment.HITId,
@@ -268,6 +269,7 @@
       };
     });
 
+    // Process each answer.
     return promisify.map(this, results => {
       let AssignmentId = results.id;
       let answer = results.answer;
@@ -278,6 +280,8 @@
         .then(files => {
           let destination;
           files = files || [];
+
+          // Decide where to put the sound clip based on answer.
           if (answer.answer === 'yes') {
             destination = path.resolve(VERIFIED_PATH, answer.previousworkerid);
           } else if (answer.answer === 'no' || answer.answer === 'bad') {
@@ -287,6 +291,7 @@
             throw 'Unrecognized verify answer: ' + answer.answers;
           }
 
+          // Move the sound clips to their destination.
           return promisify.map(this, f => {
             let p = path.resolve(destination, path.basename(f));
             return promisify(fs, fs.move, [f, p]);
