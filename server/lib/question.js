@@ -5,7 +5,6 @@
   const promisify = require('./promisify');
 
   const BASE_URL = 'https://mechturk.henretty.us/';
-  const VERIFY_URL = BASE_URL + 'verify.html';
   // TODO: figure out production version of this.
   const HIT_URL = "https://workersandbox.mturk.com/mturk/preview?groupId=";
 
@@ -45,8 +44,10 @@
     return typeof option1 !== 'undefined' ? options1: option2;
   }
 
-  function Question(mt) {
+  function Question(mt, config) {
     this._mt = mt;
+    this._baseUrl = config.serverRoot || BASE_URL;
+    this._verifyUrl = this._baseUrl + 'verify.html';
   }
 
   Question.prototype._createHIT = function(options) {
@@ -103,7 +104,7 @@
   };
 
   Question.prototype._getQuestionXMLTemplate = function(url, height) {
-    url = url || BASE_URL;
+    url = url || this._baseUrl;
     height = height || 400;
     return `<ExternalQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2006-07-14/ExternalQuestion.xsd">
       <ExternalURL>${url}</ExternalURL>
@@ -160,7 +161,7 @@
   Question.prototype.add = function() {
     return this._getRandomQuestion()
       .then(sentence => {
-        let url = BASE_URL + '?sentence=' + sentence;
+        let url = this._baseUrl + '?sentence=' + sentence;
         return this._addWithType(HIT_RECORD, {
           Question: this._getQuestionXMLTemplate(url)
         });
@@ -169,7 +170,7 @@
 
   // We expect HITId, AssignmentId, WorkerId, and excerpt in the info array.
   Question.prototype.addVerify = function(info) {
-    let url = VERIFY_URL + '?verifyid=' + info.AssignmentId +
+    let url = this._verifyUrl + '?verifyid=' + info.AssignmentId +
       '&amp;previousworkerid=' + info.WorkerId +
       '&amp;excerpt=' + encodeURIComponent(info.excerpt);
 

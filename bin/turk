@@ -2,7 +2,7 @@
 require('../config.js')(config => {
   'use strict';
   let Mechturk = require('../server/lib/mechturk.js');
-  let mt = new Mechturk(config.PROD);
+  let mt = new Mechturk(config);
   let command = process.argv[2];
   mt.runCommand(command, process.argv[3])
     .catch(e => {

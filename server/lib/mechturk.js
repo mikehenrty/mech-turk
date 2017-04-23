@@ -68,7 +68,8 @@
    * MechTurk, class for handling aws mt api.
    * @production - bool, use production entpoint.
    */
-  function MechTurk(production) {
+  function MechTurk(config) {
+    let production = config.PROD;
     AWS.config.loadFromPath(CONFIG_FILE);
 
     // Make sure to use appropriate endpoint.
@@ -78,7 +79,7 @@
     }
 
     this._mt = new AWS.MTurk({ endpoint: endpoint });
-    this._question = new Question(this._mt);
+    this._question = new Question(this._mt, config);
   }
 
   MechTurk.prototype._glob = function(pattern) {
