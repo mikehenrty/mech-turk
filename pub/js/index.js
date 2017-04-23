@@ -536,7 +536,7 @@
         req.upload.addEventListener('load', resolve);
         req.open('POST', SOUNDCLIP_URL);
         req.setRequestHeader('uid', query.workerId);
-        req.setRequestHeader('sentence', currentSentence);
+        req.setRequestHeader('sentence', encodeURIComponent(currentSentence));
         req.setRequestHeader('assignmentid', query.assignmentId);
         req.send(recording);
       });
