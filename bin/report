@@ -1,0 +1,3 @@
+#!/usr/bin/env node
+'use strict';
+require('../server/lib/metrics.js').report(process.exit.bind(process, 0));

@@ -56,6 +56,21 @@
     });
   };
 
+  Mongo.prototype.getCollection = function(cb) {
+    this.getDB((err, db) => {
+      cb(err, db && db.collection(this.name));
+    });
+  };
+
+  Mongo.prototype.count = function(cb) {
+    let f = ff(() => {
+      this.getCollection(f());
+    },
+      collection => {
+        collection.count(f());
+      }).onComplete(cb);
+  };
+
   Mongo.prototype.destroy = function(cb) {
     let f = ff(() => {
       this.getDB(f());

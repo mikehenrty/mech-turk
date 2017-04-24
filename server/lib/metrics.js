@@ -1,6 +1,8 @@
 (function() {
   'use strict';
 
+  const ff = require('ff');
+
   const workers = require('./db/workers');
   const sentences = require('./db/sentences');
   const events = require('./db/events');
@@ -8,6 +10,22 @@
   const ID_NOT_AVAILABLE = 'ASSIGNMENT_ID_NOT_AVAILABLE';
 
   let metrics = {
+    report: function(cb) {
+      let f = ff(() => {
+        workers.count(f());
+        sentences.count(f());
+        events.count(f());
+      },
+
+        (ws, ss, es) => {
+          console.log(`${ws} registered`);
+          console.log(`${ss} sentences tracked`);
+          console.log(`${es} events logged`);
+
+          workers.disconnect();
+        }).onComplete(cb);
+    },
+
     isEventRequest: function(request) {
       return request.method === 'POST' && request.url.includes('/event/');
     },
