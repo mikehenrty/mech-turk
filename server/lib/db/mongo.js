@@ -58,7 +58,7 @@
 
   Mongo.prototype.destroy = function(cb) {
     let f = ff(() => {
-      mongo.getDB(f());
+      this.getDB(f());
     },
 
       db => {
