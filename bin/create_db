@@ -4,7 +4,6 @@
 
   const DB_PATH = __dirname + '/../server/lib/db/';
 
-  const mongo = require(DB_PATH + 'mongo');
   const workers = require(DB_PATH + 'workers');
   const sentences = require(DB_PATH + 'sentences');
   const events = require(DB_PATH + 'events');
@@ -25,7 +24,7 @@
         console.log('database created');
       }
 
-      mongo.disconnect();
+      sentences.disconnect();
       if (cb) { cb(); }
     });
   }
