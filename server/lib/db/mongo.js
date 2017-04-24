@@ -71,6 +71,12 @@
       }).onComplete(cb);
   };
 
+  Mongo.prototype.remove = function(cb) {
+    this.getCollection((err, collection) => {
+      collection.remove({}, cb);
+    });
+  };
+
   Mongo.prototype.destroy = function(cb) {
     let f = ff(() => {
       this.getDB(f());

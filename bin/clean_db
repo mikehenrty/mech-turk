@@ -1,0 +1,43 @@
+#!/usr/bin/env node
+(function() {
+  'use strict';
+
+  const DB_PATH = __dirname + '/../server/lib/db/';
+
+  const workers = require(DB_PATH + 'workers');
+  const sentences = require(DB_PATH + 'sentences');
+  const events = require(DB_PATH + 'events');
+
+  let ff = require('ff');
+
+  function run(cb) {
+    let f = ff(() => {
+      sentences.remove(f());
+      workers.remove(f());
+      events.remove(f());
+    });
+
+    f.onComplete((err) => {
+      if (err) {
+        console.error('could not remove all db', err);
+      } else {
+        console.log('databases removed');
+      }
+
+      sentences.disconnect();
+      if (cb) { cb(); }
+    });
+  }
+
+  console.log('Type "Yes" to remove all data.');
+  process.stdin.resume();
+  process.stdin.setEncoding('utf8');
+  process.stdin.on('data', function (text) {
+    if (text.trim() !== 'Yes') {
+      console.log('Aborting db clean.');
+      process.exit(1);
+    }
+
+    run(process.exit.bind(process, 0));
+  });
+})();
