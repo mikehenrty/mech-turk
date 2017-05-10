@@ -18,7 +18,7 @@
       },
 
         (ws, ss, es) => {
-          console.log(`${ws} registered`);
+          console.log(`${ws} workers registered`);
           console.log(`${ss} sentences tracked`);
           console.log(`${es} events logged`);
 

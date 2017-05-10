@@ -92,11 +92,11 @@
   };
 
   Workers.prototype.trackRecord = function(workerId, ip, agent) {
-    workers.track('record', workerId, ip, agent);
+    this.track('record', workerId, ip, agent);
   };
 
   Workers.prototype.trackVerify = function(workerId, ip, agent) {
-    workers.track('verify', workerId, ip, agent);
+    this.track('verify', workerId, ip, agent);
   };
 
   Workers.prototype.addSubmission = function(workerId, cb) {

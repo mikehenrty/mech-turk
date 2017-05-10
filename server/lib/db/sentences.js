@@ -56,11 +56,11 @@
   };
 
   Sentences.prototype.addRecord = function(excerpt, workerId, assignmentId) {
-    sentences.add('record', excerpt, workerId, assignmentId);
+    this.add('record', excerpt, workerId, assignmentId);
   };
 
   Sentences.prototype.addVerify = function(excerpt, workerId, assignmentId) {
-    sentences.add('verify', excerpt, workerId, assignmentId);
+    this.add('verify', excerpt, workerId, assignmentId);
   };
 
   Sentences.prototype.create = function(cb) {
