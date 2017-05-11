@@ -489,7 +489,8 @@
 
         return promisify.map(this, hit => {
           // Don't delete hits with Reviewing status.
-          if (hit.HITStatus === 'Reviewing') {
+          if (hit.HITStatus === 'Reviewing' ||
+              hit.HITStatus === 'Assignable') {
             return;
           }
 
