@@ -530,8 +530,8 @@
     let count = 0;
 
     return this._listHITs(NextToken).then(hits => {
-      hits.HITs.forEach(hit => {
-        let type = 'Unrecognized';
+      let left = hits.HITs.filter(hit => {
+        let type = 'Unrecognized-' + hit.HITTypeId;
         if (hit.HITTypeId === recordType) {
           type = 'Recording';
         } else if (hit.HITTypeId === verifyType) {
