@@ -608,7 +608,7 @@
   };
 
   MechTurk.prototype.help = function() {
-    console.log('\nUsage: `gulp turk command`');
+    console.log('\nUsage: turk [command]');
     Object.keys(COMMANDS).forEach(command => {
       console.log(`  ${command} - ${COMMANDS[command]}`);
     });
