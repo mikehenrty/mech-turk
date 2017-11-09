@@ -458,6 +458,10 @@
   };
 
   MechTurk.prototype.review = function() {
+    console.error('just approve these jobs and create a way to create validate jobs separately');
+
+    return;
+
     return this._reviewAll().then(reviewed => {
       if (reviewed < 1) {
         console.log('no reviewable jobs');
@@ -613,6 +617,7 @@
       console.log(`  ${command}   \t- ${COMMANDS[command]}`);
     });
     console.log();
+    return Promise.resolve();
   };
 
   MechTurk.prototype.stats = function() {
