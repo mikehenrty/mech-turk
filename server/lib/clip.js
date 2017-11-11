@@ -7,41 +7,68 @@
   const path = require('path');
   const ff = require('ff');
   const fs = require('fs');
+  const FSHelper = require('./fs-helper');
+  const fsHelper = new FSHelper();
 
-  const UPLOAD_PATH = path.resolve(__dirname, '..', 'upload', 'recorded');
+  const UPLOAD_PATH = FSHelper.RECORDED_PATH;
 
-  const ACCEPTED_EXT = [ 'ogg', 'webm', 'm4a' ];
+  const ACCEPTED_EXT = FSHelper.ACCEPTED_EXT;
 
   let clip = {
+
+    isUpload: function(request) {
+      return request.url.includes('/upload/');
+    },
+
+    isVerify: function(request) {
+      return request.url.includes('/verify/');
+    },
 
     /**
      * Is this request directed at voice clips?
      */
     isClipRequest: function(request) {
-      return request.url.includes('/upload/');
+      return this.isUpload(request) || this.isVerify(request);
     },
 
     handleRequest: function(request, response) {
-      if (request.method === 'POST') {
-        metrics.trackSubmission(request);
-        clip.save(request).then(timestamp => {
-          response.writeHead(200);
-          response.end('' + timestamp);
-        }).catch(e => {
-          response.writeHead(500);
-          console.error('saving clip error', e, e.stack);
-          response.end('Error');
-        });
-      } else {
+      if (request.method === 'GET') {
         clip.serve(request, response);
+        return;
       }
+
+      if (request.method !== 'POST') {
+        console.error('unrecognized method', request.method);
+        response.writeHead(500);
+        response.end('Error');
+        return;
+      }
+
+      metrics.trackSubmission(request);
+      clip.save(request).then(timestamp => {
+        response.writeHead(200);
+        response.end('' + timestamp);
+      }).catch(e => {
+        response.writeHead(500);
+        console.error('saving file error', e, e.stack);
+        response.end('Error');
+      });
     },
 
     save: function(request) {
       let info = request.headers;
+      let hitId = info.hitid;
       let uid = info.uid;
-      let sentence = info.sentence;
+      let sentence = unescape(info.sentence);
       let assignmentId = info.assignmentid;
+
+      // For verify posts, we simply save a verification file.
+      if (this.isVerify(request)) {
+        const workerId = info.previousworkerid;
+        const verifyId = info.verifyid;
+        const answer = info.answer;
+        return fsHelper.handleVerifyRequest(workerId, verifyId, uid, answer, request);
+      }
 
       return new Promise((resolve, reject) => {
         let extension = '.ogg';  // Firefox gives us opus in ogg
@@ -65,9 +92,10 @@
           let writeStream = fs.createWriteStream(file);
           request.pipe(writeStream);
           request.on('end', f());
-          fs.writeFile(path.join(folder, assignmentId + '.txt'), sentence, f());
+          fsHelper.writeRecordTextFile(uid, assignmentId, sentence, f());
+          fsHelper.writeRecordMetaFile(hitId, uid, assignmentId, extension, f());
         }, () => {
-          console.log('file written', file);
+          console.log('file written?', file);
           resolve(assignmentId);
         }).onError(reject);
       });

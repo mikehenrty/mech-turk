@@ -4,21 +4,28 @@
   const path = require('path');
   const promisify = require('./promisify');
 
-  const BASE_URL = 'https://mechturk.henretty.us/';
+  const BASE_URL = 'https://mozvoice.org/';
   // TODO: figure out production version of this.
   const HIT_URL = "https://workersandbox.mturk.com/mturk/preview?groupId=";
 
   const SENTENCES_FILE = path.resolve(__dirname, 'screenplaysfinal.txt');
 
+  const VERIFY_ASSIGNMENTS = 2; // TODO: change to 3.
+  const VERIFY_MAJORITY = 2;
+
+  // const DEFAULT_DURATION = 60 * 15; // 1 Day default.
+  const HIT_TIMEOUT = 60 * 60 * 24; // 1 day runs.
+  const ASSINGMENT_TIMEOUT = 60 * 5; // 5 minutes for debug mode.
+
   const DEFAULT_OPTIONS = {
-    LifetimeInSeconds: 3600,
-    MaxAssignments: 1
+    LifetimeInSeconds: HIT_TIMEOUT,
+    MaxAssignments: 2,
   };
 
   const HIT_RECORD = {
     Title: 'Read one English sentence out loud',
     Description: 'As simple as reading the sentence(s). - Voice',
-    AssignmentDurationInSeconds: 600,
+    AssignmentDurationInSeconds: ASSINGMENT_TIMEOUT,
     Reward:'0.01',
     QualificationRequirements:[{
       QualificationTypeId:'00000000000000000071',
@@ -30,7 +37,7 @@
   const HIT_VERIFY = {
     Title: 'Listen to a spoken sentence, and verify the words',
     Description: 'Verify spoken words. - Voice',
-    AssignmentDurationInSeconds: 600,
+    AssignmentDurationInSeconds: ASSINGMENT_TIMEOUT,
     Reward:'0.01',
     QualificationRequirements:[{
       QualificationTypeId:'00000000000000000071',
@@ -38,7 +45,6 @@
       LocaleValues: [{Country:'US'}, {Country: 'DE'}]
     }]
   };
-
 
   function choose(option1, option2) {
     return typeof option1 !== 'undefined' ? options1: option2;
@@ -49,6 +55,9 @@
     this._baseUrl = config.serverRoot || BASE_URL;
     this._verifyUrl = this._baseUrl + 'verify.html';
   }
+
+  Question.VERIFY_ASSIGNMENTS = 3;
+  Question.VERIFY_MAJORITY = 2;
 
   Question.prototype._createHIT = function(options) {
     return promisify(this._mt, this._mt.createHIT, options);
@@ -125,9 +134,8 @@
         hit = hit.HIT;
         // Good debug output when creating many hits.
         // console.log('new hit created', hit.Title, hit.HITTypeId.substr(0, 4));
-        let url = HIT_URL + hit.HITTypeId;
-        console.log(url);
-        return url;
+        hit.url = HIT_URL + hit.HITTypeId;
+        return hit;
       });
   };
 
@@ -176,9 +184,20 @@
 
     return this._addWithType(HIT_VERIFY, {
       Question: this._getQuestionXMLTemplate(url),
-      RequesterAnnotation: info.HITId
+      RequesterAnnotation: info.HITId,
+      MaxAssignments: VERIFY_ASSIGNMENTS,
     });
   };
+
+  Question.prototype.addVerifyRaw =
+    function(hitId, workerId, assignmentId, excerpt) {
+      return this.addVerify({
+        HITId: hitId,
+        AssignmentId: assignmentId,
+        WorkerId: workerId,
+        excerpt: excerpt,
+      });
+    };
 
   module.exports = Question;
 })();
