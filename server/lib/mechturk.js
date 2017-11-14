@@ -516,12 +516,19 @@
         continue;
       }
 
+      // only finalize jobs with the right number of votes.
+      if (c.good + c.bad < Question.verify_assignments) {
+        continue;
+      }
+
       if (c.good >= Question.VERIFY_MAJORITY) {
         ++verified;
         await this._fsHelper.verifyGood(c.workerId, c.assignmentId);
       } else if (c.bad >= Question.VERIFY_MAJORITY) {
         ++rejected;
         await this._fsHelper.verifyBad(c.workerId, c.assignmentId);
+      } else {
+        console.error('my math was wrong somewhere');
       }
     }
 
