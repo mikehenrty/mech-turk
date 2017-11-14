@@ -10,7 +10,7 @@
 
   const SENTENCES_FILE = path.resolve(__dirname, 'screenplaysfinal.txt');
 
-  const VERIFY_ASSIGNMENTS = 2; // TODO: change to 3.
+  const VERIFY_ASSIGNMENTS = 3;
   const VERIFY_MAJORITY = 2;
 
   // const DEFAULT_DURATION = 60 * 15; // 1 Day default.
@@ -27,11 +27,6 @@
     Description: 'As simple as reading the sentence(s). - Voice',
     AssignmentDurationInSeconds: ASSINGMENT_TIMEOUT,
     Reward:'0.01',
-    QualificationRequirements:[{
-      QualificationTypeId:'00000000000000000071',
-      Comparator: "In",
-      LocaleValues: [{Country:'US'}, {Country: 'DE'}]
-    }]
   };
 
   const HIT_VERIFY = {
