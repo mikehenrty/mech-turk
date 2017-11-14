@@ -442,31 +442,6 @@
     } while (NextToken);
 
     return count;
-    // let assignments, next;
-
-    // return this._getAssigments(NextToken)
-    //   .then(async function(data) {
-    //     console.log('got some assignments', data);
-    //     assignments = data.assignments;
-    //     next = data.NextToken;
-
-    //     for (let i = 0; i < assignments.length; i++) {
-    //       const assignmentId = assignments[i].AssignmentId;
-    //       const thing = await promisify(this, this._approveAssignment, assignmentId);
-    //       console.log(thing);
-    //     }
-    //   }.bind(this))
-
-    //   .then(() => {
-    //     if (!next) {
-    //       console.log('returning', assignments);
-    //       return assignments.length;
-    //     }
-
-    //     return this._approveAll(next).then(r => {
-    //       return assignments.length + r;
-    //     });
-    //   });
   };
   /* jshint ignore:end */
 
