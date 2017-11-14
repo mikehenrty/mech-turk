@@ -535,6 +535,7 @@
         var req = new XMLHttpRequest();
         req.upload.addEventListener('load', resolve);
         req.open('POST', SOUNDCLIP_URL);
+        req.setRequestHeader('hitid', query.hitId);
         req.setRequestHeader('uid', query.workerId);
         req.setRequestHeader('sentence', encodeURIComponent(currentSentence));
         req.setRequestHeader('assignmentid', query.assignmentId);

@@ -7,15 +7,16 @@
   const glob = require('glob');
   const Question = require('./question');
   const promisify = require('./promisify');
+  const FSHelper = require('./fs-helper');
 
   const CONFIG_FILE = __dirname + '/../../config.json';
-  const UPLOAD_PATH = __dirname + '/../upload/';
-  const RECORDED_DIR = 'recorded';
-  const RECORDED_PATH = path.resolve(UPLOAD_PATH, RECORDED_DIR);
-  const VERIFIED_DIR = 'verified';
-  const VERIFIED_PATH = path.resolve(UPLOAD_PATH, VERIFIED_DIR);
-  const REJECTED_DIR = 'rejected';
-  const REJECTED_PATH = path.resolve(UPLOAD_PATH, REJECTED_DIR);
+  const UPLOAD_PATH = FSHelper.UPLOAD_PATH;
+  const RECORDED_DIR = FSHelper.RECORDED_DIR;
+  const RECORDED_PATH = FSHelper.RECORDED_PATH;
+  const VERIFIED_DIR = FSHelper.VERIFIED_DIR;
+  const VERIFIED_PATH = FSHelper.VERIFIED_PATH;
+  const REJECTED_DIR = FSHelper.REJECTED_DIR;
+  const REJECTED_PATH = FSHelper.REJECTED_PATH;
 
   const ENDPOINT_PROD =
     'https://mturk-requester.us-east-1.amazonaws.com';
@@ -36,7 +37,10 @@
     'list'   : 'List the current HITs and their status.',
     'stats'  : 'List the status of the current uploaded clips.',
     'add'    : 'Add a new voice recording HIT.',
-    'review' : 'Review current HITs',
+    'process': 'Approve/delete reviewable jobs, create verify tasks.',
+    'kill'   : 'Get rid of all jobs.',
+    'review' : 'Review current HITs.',
+    'verify' : 'Create verify hits from recorded folder.',
     'approve': 'Approve HITs.',
     'reset'  : 'Reset reviewing status back to available.',
     'expire' : 'Forcibly expire all available HITs.',
@@ -60,6 +64,15 @@
     console.error('could not count unrecognized results', results);
   }
 
+  function printUrlListFromResults(results) {
+    Object.keys(results.reduce((acc, hit) => {
+      acc[hit.url] = true;
+      return acc;
+    }, {})).forEach(url => {
+      console.log(url);
+    });
+  }
+
   function little(str) {
     return str.substr(0, 4) + str.substr(-4);
   }
@@ -80,6 +93,7 @@
 
     this._mt = new AWS.MTurk({ endpoint: endpoint });
     this._question = new Question(this._mt, config);
+    this._fsHelper = new FSHelper();
   }
 
   MechTurk.prototype._glob = function(pattern) {
@@ -123,12 +137,6 @@
     return promisify(this._mt, this._mt.updateHITReviewStatus, {
       HITId: id,
       Revert: Revert
-    });
-  };
-
-  MechTurk.prototype._deleteHIT = function(id) {
-    return promisify(this._mt, this._mt.deleteHIT, {
-      HITId: id,
     });
   };
 
@@ -415,27 +423,27 @@
     }, hits);
   };
 
-  MechTurk.prototype._approveAll = function(NextToken) {
-    return this._getAssigments(NextToken)
-      .then(data => {
-        let assignments = data.assignments;
-        let next = data.NextToken;
+  /* jshint ignore:start */
+  MechTurk.prototype._approveAll = async function(NextToken) {
+    let count = 0;
 
-        return promisify.map(this, this._approveAssignment, assignments.map(a => {
-          return a.AssignmentId;
-        }))
+    do {
+      const results = await this._getAssigments(NextToken);
+      NextToken = results.NextToken;
+      const assignments = results.assignments;
 
-          .then(() => {
-            if (!next) {
-              return assignments.length;
-            }
+      for (let i = 0; i < assignments.length; i++) {
+        const assignment = assignments[i];
+        const assignmentId = assignment.AssignmentId;
+        await this._approveAssignment(assignmentId);
+        ++count;
+      }
 
-            return this._approveAll(next).then(r => {
-              return assignments.length + r;
-            });
-          });
-      });
+    } while (NextToken);
+
+    return count;
   };
+  /* jshint ignore:end */
 
   MechTurk.prototype.expire = function() {
     let count = 0;
@@ -457,19 +465,81 @@
       });
   };
 
+  /* jshint ignore:start */
+  MechTurk.prototype.kill = async function() {
+    await this.approve();
+    await this.expire();
+    await this.trim();
+  };
+
   MechTurk.prototype.review = function() {
     console.error('just approve these jobs and create a way to create validate jobs separately');
-
     return;
 
-    return this._reviewAll().then(reviewed => {
-      if (reviewed < 1) {
-        console.log('no reviewable jobs');
-        return;
-      }
-      console.log('reviewed jobs', reviewed);
-    });
+    // return this._reviewAll().then(reviewed => {
+    //   if (reviewed < 1) {
+    //     console.log('no reviewable jobs');
+    //     return;
+    //   }
+    //   console.log('reviewed jobs', reviewed);
+    // });
   };
+
+  MechTurk.prototype.verify = async function() {
+    const recorded = await this._fsHelper.getVerifiable();
+    let results = [];
+
+    for (let i = 0; i < recorded.length; i++) {
+      const r = recorded[i];
+      const result = await this._question.addVerifyRaw(
+        r.hitId,
+        r.workerId,
+        r.assignmentId,
+        r.sentence
+      );
+      results.push(result);
+      await this._fsHelper.markVerify(
+          r.workerId, r.assignmentId, result.HITId);
+    }
+    printUrlListFromResults(results);
+    console.log('created verify jobs', recorded.length);
+
+    // Move any verified or rejected clips.
+    let verified = 0;
+    let rejected = 0;
+    const clips = await this._fsHelper.listClips();
+    for(let i = 0; i < clips.length; i++) {
+      const c = clips[i];
+
+      // We only care about non reviewed clips.
+      if (c.type !== RECORDED_DIR) {
+        continue;
+      }
+
+      if (c.good >= Question.VERIFY_MAJORITY) {
+        ++verified;
+        await this._fsHelper.verifyGood(c.workerId, c.assignmentId);
+      } else if (c.bad >= Question.VERIFY_MAJORITY) {
+        ++rejected;
+        await this._fsHelper.verifyBad(c.workerId, c.assignmentId);
+      }
+    }
+
+    if (verified > 0) {
+      console.log('verified clips', verified);
+    }
+    if (rejected > 0) {
+      console.log('rejected clips', rejected);
+    }
+  };
+
+  MechTurk.prototype.process = async function() {
+    await this.approve();
+    await this.trim();
+    await this.verify();
+    await this.list();
+  };
+  /* jshint ignore:end */
 
   MechTurk.prototype.reset = function() {
     let count = 0;
@@ -492,16 +562,17 @@
         next = hits.NextToken;
 
         return promisify.map(this, hit => {
-          // Don't delete hits with Reviewing status.
+          // Don't delete hits with that are open or in-review.
           if (hit.HITStatus === 'Reviewing' ||
+              hit.HITStatus === 'Unassignable' ||
               hit.HITStatus === 'Assignable') {
             return;
           }
 
           // Make sure HIT we are deleting has all it's submitted
           // asssigments already reviewed.
-          if (hit.NumberOfAssignmentsCompleted +
-              hit.NumberOfAssignmentsAvailable !== hit.MaxAssignments) {
+          if ((hit.NumberOfAssignmentsCompleted +
+              hit.NumberOfAssignmentsAvailable) !== hit.MaxAssignments) {
             return;
           }
 
@@ -571,7 +642,7 @@
   MechTurk.prototype.list = function() {
     return Promise.all([
       this._question.getRecordHitType(),
-      this._question.getVerifyHitType()
+      this._question.getVerifyHitType(),
     ])
 
       .then(results => {
@@ -584,6 +655,9 @@
         if (count === 0) {
           console.log('no current hits');
         }
+
+        // Now print upload file stats.
+        return this.stats();
       });
   };
 
@@ -596,18 +670,9 @@
     }
     return Promise.all(promises)
       .then(results => {
-
-        // Print nice output for adding all these jobs.
-        // Print any new group urls, and new job count.
-        let count = results.length;
-        Object.keys(results.reduce((acc, val) => {
-          acc[val] = true;
-          return acc;
-        }, {})).forEach(url => {
-          // TODO, only print once per group somehow.
-          // console.log(url);
-        });
-        console.log('new jobs created', count);
+        // Print any new group urls.
+        printUrlListFromResults(results);
+        console.log('new jobs created', results.length);
       });
   };
 
@@ -620,45 +685,36 @@
     return Promise.resolve();
   };
 
-  MechTurk.prototype.stats = function() {
+  /* jshint ignore:start */
+  MechTurk.prototype.stats = async function() {
     let rec = 0;
+    let rev = 0;
     let ver = 0;
     let rej = 0;
+    const clips = await this._fsHelper.listClips();
 
-    return new Promise((resolve, reject) => {
-      let walk = require('walk');
-      let walker = walk.walk(UPLOAD_PATH);
-
-      walker.on('file', (root, fileStats, next) => {
-        if (fileStats.name === 'README.txt') {
-          next();
-          return;
-        }
-
-        if (fileStats.name.substr(-4) !== '.txt') {
-          next();
-          return;
-        }
-
-        if (root.indexOf(RECORDED_DIR) !== -1) {
-          ++rec;
-        } else if (root.indexOf(VERIFIED_DIR) !== -1) {
-          ++ver;
-        } else if (root.indexOf(REJECTED_DIR) !== -1) {
-          ++rej;
+    for (let i = 0; i < clips.length; i++) {
+      const c = clips[i];
+      if (c.type === RECORDED_DIR) {
+        if (c.verifying) {
+          ++rev;
         } else {
-          console.error('unrecognized text file', root, fileStats.name);
+          ++rec;
         }
-        next();
-      });
+      } else if (c.type === VERIFIED_DIR) {
+        ++ver;
+      } else if (c.type === REJECTED_DIR) {
+        ++rej;
+      } else {
+        console.error('unrecognized text file', root, fileStats.name);
+      }
+    }
 
-      walker.on('end', () => {
-        console.log(`${rec} unverified, ${ver} verified, ${rej} rejected`);
-        resolve();
-      });
-
-    });
+    console.log(
+      `--> ${rec} unverified --> ${rev} in-review --> ${ver} good --> ${rej} bad`
+    );
   };
+  /* jshint ignore:end */
 
   MechTurk.prototype.balance = function() {
     return this._getAccountBalance().then(results => {

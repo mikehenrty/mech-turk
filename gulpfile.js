@@ -45,7 +45,6 @@
     ];
     gulp.watch(watchPaths, ['lint']);
     gulp.watch('package.json', ['npm-install']);
-    gulp.watch('package.json', ['npm-install']);
   });
 
   gulp.task('deploy', ['npm-install', 'lint'], (done) => {

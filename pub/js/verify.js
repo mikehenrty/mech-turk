@@ -1,5 +1,6 @@
 var $ = document.querySelector.bind(document);
 var SOUNDCLIP_URL = '/upload/';
+var VERIFY_URL = '/verify/';
 
 var SANDBOX_URL = 'https://workersandbox.mturk.com';
 var SANDBOX_ACTION = SANDBOX_URL + '/mturk/externalSubmit';
@@ -33,8 +34,16 @@ function clipWasPlayed() {
   return played;
 }
 
+function getSelectedAnswer() {
+  var list = document.querySelectorAll('input[type="radio"]:checked');
+  if (list.length < 1) {
+    return null;
+  }
+  return list[0];
+}
+
 function isFormReadyToSubmit() {
-  return document.querySelectorAll('input[type="radio"]:checked').length > 0;
+  return !!getSelectedAnswer();
 }
 
 function validateForm() {
@@ -54,8 +63,25 @@ function validateForm() {
   return true;
 }
 
+// Tell server about answer.
+function verifyClip(cb) {
+  var query = getQuery();
+  var req = new XMLHttpRequest();
+  req.addEventListener('load', cb);
+  req.addEventListener('error', cb);
+  req.open('POST', VERIFY_URL);
+  req.setRequestHeader('hitid', query.hitId);
+  req.setRequestHeader('uid', query.workerId);
+  req.setRequestHeader('assignmentid', query.assignmentId);
+  req.setRequestHeader('previousworkerid', query.previousworkerid);
+  req.setRequestHeader('verifyid', query.verifyid);
+  req.setRequestHeader('answer', getSelectedAnswer().value);
+  req.send(query.assignmentId);
+}
+
 function onLoad() {
   var query = getQuery();
+  console.log('**', query);
 
   // Use sandbox form action in sandbox mode.
   if (query.turkSubmitTo === SANDBOX_URL) {
@@ -96,8 +122,10 @@ function onLoad() {
       return false;
     }
 
-    var f = $('form');
-    f.submit();
+    verifyClip(function() {
+      var f = $('form');
+      f.submit();
+    });
     return true;
   });
 
