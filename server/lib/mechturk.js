@@ -517,7 +517,7 @@
       }
 
       // only finalize jobs with the right number of votes.
-      if (c.good + c.bad < Question.verify_assignments) {
+      if (c.good + c.bad < Question.VERIFY_ASSIGNMENTS) {
         continue;
       }
 
