@@ -214,10 +214,15 @@
     let verifiable = [];
     for (let i = 0; i < clips.length; i++) {
       const clip = clips[i];
-      const info =
-        await this.getClipInfo(clip.type, clip.workerId, clip.assignmentId);
+      let info = null;
+      try {
+        info =
+          await this.getClipInfo(clip.type, clip.workerId, clip.assignmentId);
+      } catch (err) {
+        console.error('clip no longer in recorded folder', clip);
+      }
 
-      if (!clip.verifying) {
+      if (info && !clip.verifying) {
         clip.hitId = info.hitId;
         clip.sentence = info.sentence;
         verifiable.push(clip);

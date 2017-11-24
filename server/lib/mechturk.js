@@ -44,6 +44,7 @@
     'approve': 'Approve HITs.',
     'reset'  : 'Reset reviewing status back to available.',
     'expire' : 'Forcibly expire all available HITs.',
+    'unexpire': 'Add 5 hours to add jobs.',
     'trim'   : 'Delete all deletable jobs.'
   };
 
@@ -144,6 +145,15 @@
     return promisify(this._mt, this._mt.updateExpirationForHIT, {
       HITId: id,
       ExpireAt: 0
+    });
+  };
+
+  MechTurk.prototype._unExpireHIT = function(id) {
+    let tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return promisify(this._mt, this._mt.updateExpirationForHIT, {
+      HITId: id,
+      ExpireAt: tomorrow,
     });
   };
 
@@ -302,7 +312,11 @@
           // Move the sound clips to their destination.
           return promisify.map(this, f => {
             let p = path.resolve(destination, path.basename(f));
-            return promisify(fs, fs.move, [f, p]);
+            return promisify(fs, fs.move, [f, p])
+              .catch(e => {
+                console.log('could not find clip, already moved');
+                return [];
+              });
           }, files)
 
             .then(r => {
@@ -458,6 +472,19 @@
     });
   };
 
+  MechTurk.prototype.unexpire = function() {
+    let count = 0;
+    return this._runOnAllHits(hit => {
+      return this._unExpireHIT(hit.HITId)
+        .then(results => {
+          ++count;
+          return results;
+        });
+    }).then(() => {
+      console.log(`resumed ${count} HITs`);
+    });
+  };
+
   MechTurk.prototype.approve = function() {
     return this._approveAll()
       .then(approved => {
@@ -528,7 +555,7 @@
         ++rejected;
         await this._fsHelper.verifyBad(c.workerId, c.assignmentId);
       } else {
-        console.error('my math was wrong somewhere');
+        console.error('my math was wrong somewhere', c);
       }
     }
 

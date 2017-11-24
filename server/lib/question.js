@@ -14,19 +14,19 @@
   const VERIFY_MAJORITY = 2;
 
   // const DEFAULT_DURATION = 60 * 15; // 1 Day default.
-  const HIT_TIMEOUT = 60 * 60 * 24; // 1 day runs.
-  const ASSINGMENT_TIMEOUT = 60 * 5; // 5 minutes for debug mode.
+  const HIT_TIMEOUT = 60 * 60 * 24 * 1; // 1 day run.
+  const ASSINGMENT_TIMEOUT = 60 * 30; // 5 minutes for debug mode.
 
   const DEFAULT_OPTIONS = {
     LifetimeInSeconds: HIT_TIMEOUT,
-    MaxAssignments: 2,
+    MaxAssignments: 500,
   };
 
   const HIT_RECORD = {
-    Title: 'Read one English sentence out loud',
-    Description: 'As simple as reading the sentence(s). - Voice',
+    Title: 'Read one English phrase out loud',
+    Description: 'As simple as reading the phrase. Done in seconds!',
     AssignmentDurationInSeconds: ASSINGMENT_TIMEOUT,
-    Reward:'0.01',
+    Reward:'0.06',
   };
 
   const HIT_VERIFY = {
